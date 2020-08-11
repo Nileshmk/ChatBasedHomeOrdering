@@ -4,6 +4,7 @@
   "description": "grpc server for making a android chatting app",
   "main": "index.js",
   "scripts": {
+    "start": "node index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "nilesh",

@@ -21,7 +21,7 @@ const grpc = require('grpc');
 const protoLoader = require('@grpc/proto-loader');
 
 // loading protoLoader
-const packageDef = protoLoader.loadSync("todo.proto",{});
+const packageDef = protoLoader.loadSync("./proto/todo.proto",{});
 const roomObject = grpc.loadPackageDefinition(packageDef);
 const roomPackage = roomObject.todoPackage;
 
