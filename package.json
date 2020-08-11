@@ -1,0 +1,16 @@
+{
+  "name": "chatapi",
+  "version": "1.0.0",
+  "description": "grpc server for making a android chatting app",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "nilesh",
+  "license": "ISC",
+  "dependencies": {
+    "@grpc/proto-loader": "^0.5.5",
+    "grpc": "^1.24.3",
+    "mongoose": "^5.9.28"
+  }
+}

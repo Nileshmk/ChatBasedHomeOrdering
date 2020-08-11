@@ -1,0 +1,39 @@
+syntax = "proto3";
+
+package todoPackage;
+
+service Todo {
+  rpc createMessage(createchat) returns (Message);
+  rpc readMessageStream(getMessage) returns (stream Message);
+}
+
+message voidNoParam{}
+
+message Message {
+  string timestamp=1;
+  int32 messageid=2;
+  string messageText=3;
+  string userid=4;
+  string firstName=5;
+  string lastName=6;
+}
+
+message Messages{
+  repeated Message messages = 1;
+}
+
+message createchat {
+  required Rooms room = 1;
+  required Message msg = 2;
+}
+
+message getMessage {
+  required Rooms room = 1;
+  required int32 index = 2;
+}
+
+message Rooms {
+  string roomID=1;
+  string orderid=2;
+  repeated Message messages = 3;
+}
