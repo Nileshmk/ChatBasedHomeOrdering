@@ -4,11 +4,11 @@ const grpc = require('grpc');
 const protoLoader = require('@grpc/proto-loader');
 
 // loading protoLoader
-const packageDef = protoLoader.loadSync("todo.proto",{});
+const packageDef = protoLoader.loadSync("./proto/todo.proto",{});
 const roomObject = grpc.loadPackageDefinition(packageDef);
 const roomPackage = roomObject.todoPackage;
 
-const client = new roomPackage.Todo("localhost:40000",
+const client = new roomPackage.Todo("139.59.84.47:40000",
 grpc.credentials.createInsecure())
 
 const call = client.readMessageStream({
