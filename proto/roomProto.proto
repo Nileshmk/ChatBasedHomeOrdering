@@ -1,0 +1,100 @@
+syntax = "proto3";
+
+package roomPackage;
+
+service roomProto {
+  rpc placeOrder(Order) returns (Response);
+}
+
+message voidNoParam{}
+
+message Room {
+  string roomID=1;
+  string userid=2;
+  string storeid=3;
+  repeated Order orders = 4;
+}
+
+message Order{
+  string orderid=1;
+  string usercontact=2;
+  UserAddress userAddress=3;
+  string timestamp=4;
+  repeated Product products = 5;
+  int32 iteamSubtotal = 6;
+  string GST = 7;
+  int32 delCharges = 8;
+  string serviceCharges = 9;
+  int32 TotalAmount = 10;
+  string allocationid = 11;
+  string orderType = 12;
+  string starttime = 13;
+  string endtime = 14;
+  repeated Userlist userlist = 15;
+  repeated Message messages = 16;
+}
+
+message Message{
+    string timestamp=1;
+    int32 messageid=2;
+    string messageText=3;
+    string userid=4;
+    string firstName=5;
+    string lastName=6;
+}
+
+message Product{
+    string productid = 1;
+    string productName = 2;
+    string quantity = 3;
+    int32 dsPrice = 4;
+    int32 mrpPrice = 5;
+    int32 total_quantity = 6;
+    int32 total_price = 7;
+}
+
+message Userlist{
+    string id = 1;
+    string firebaseuserid = 2;
+}
+
+message UserAddress{
+  ByGoogle byGoogle = 1;
+  ByUser byUser = 2;
+  string _id = 3;
+}
+
+message ByGoogle{
+  Loc loc = 1;
+  string address = 2;
+  string city = 3;
+  string state = 4;
+  string country = 5;
+  string postalcode = 6;
+}
+
+message Loc{
+  repeated string coordinates = 1;
+  string type = 2;
+}
+message ByUser{
+  string addressTag = 1;
+  string userAddress = 2;
+  string Landmark = 3;
+}
+
+message Response{
+    string message = 1;
+    int32 response_code = 2;
+}
+
+// message createchat {
+//   required Rooms room = 1;
+//   required Message msg = 2;
+// }
+
+// message getMessage {
+//   required Rooms room = 1;
+//   required int32 index = 2;
+// }
+
