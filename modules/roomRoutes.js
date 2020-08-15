@@ -2,15 +2,18 @@ var userSchema = require("../models/userSchema");
 // var otpSchema = require("../models/otpSchema");
 // var chatOptionSchema = require("../models/chatSchema");
 var orderSummarySchema = require("../models/OrderSummary");
+var allocationSchema = require("../models/allocationSchema");
 const employeeSchema = require("../models/employeeSchema");
 const roomSchema = require("../models/roomSchema");
 const orderSchema = require("../models/orderSchema");
 const ObjectId = require("mongodb").ObjectID;
-
+const storeProductsSchema = require("../models/storeProductsSchema");
+const jsonQuery = require("json-query");
+const grpc = require('grpc');
 function placeOrder(call, callback){
-    const { orderid, usercontact,userAddress,timestamp , products, itemSubtotal,GST,delCharges,serviceCharges, TotalAmount, allocationid,orderType,starttime,endtime } =  call.request;
-    const storeid = orderid;
-    const userid = timestamp;
+    const {storeid, userid,timeslotid,order} = call.request;
+    console.log(order);
+    const { orderid, usercontact,userAddress,timestamp , products, itemSubtotal,GST,delCharges,serviceCharges, TotalAmount, allocationid,orderType,starttime,endtime } =  order;
     try{
         roomSchema.findOne({userid:userid,storeid:storeid},async(err,roomResult)=>{
             if(err) throw err;
@@ -36,10 +39,25 @@ function placeOrder(call, callback){
                 roomResult.order.push(orderModel);
                 order = await orderModel.save();
                 if(order===orderModel){
-                    return callback(null,{message :"success","response_code":200});   
+                    await allocationSchema.findOne({_id:allocationid},async(err,allocationResult)=>{
+                        console.log(allocationResult);
+                        var r = await jsonQuery("timeslots[timeslotid="+timeslotid+"]", {data: allocationResult}).value;
+                        console.log(r);
+                        if(r!=null && r.perSlotBookingNumber>0){
+                            r.perSlotBookingNumber = r.perSlotBookingNumber-1;
+                            await allocationResult.save();
+                            // return callback(null,{message :"success","response_code":200});   
+                            return callback(null,{message :"success","response_code":200});   
+                        }
+                        else{
+                            roomResult.order.pop();
+                            await orderModel.save();
+                            callback({code: grpc.status.NOT_FOUND,details: 'Not found'});
+                        }
+                    });
                 }
                 else{
-                    return callback(null,{ message : "some error in backend", "response_code" : 405 });
+                    callback({code: grpc.status.NOT_FOUND,details: 'Not found'});
                 }
             }
             else{
@@ -49,15 +67,15 @@ function placeOrder(call, callback){
                         await userSchema.findOne({_id:userid},async(err,userResult)=>{
                             if(err) throw err;
                             if(userResult){
-                                await employeeSchema.findOne({storeid:storeid,userType:{admin:false}},async(err,managerResult)=>{
+                                await employeeSchema.findOne({storeid:storeid,"userType.manager":true},async(err,managerResult)=>{
                                     if(err) throw err;
                                     if(managerResult){
-                                        let temp1 = new ObjectId();
-                                        var orderModel = new orderSchema({
-                                            roomID: new ObjectId(),
+                                        var temp = new ObjectId();
+                                        var orderModel = new roomSchema({
+                                            roomID: temp,
                                             storeid: storeResult.storeid,
                                             userid: userResult._id,
-                                            order:[{
+                                            orders:[{
                                                 orderid:new ObjectId(), 
                                                 usercontact: usercontact,
                                                 userAddress: userAddress,
@@ -82,26 +100,39 @@ function placeOrder(call, callback){
                                                 messages:[]
                                             }]
                                         });
-                                        order = await orderModel.save();
-                                        if(order===orderModel){
-                                            return callback(null,{message :"success","response_code":200});   
+                                        ordersave = await orderModel.save();
+                                        if(ordersave===orderModel){
+                                            await allocationSchema.findOne({_id:allocationid},async(err,allocationResult)=>{
+                                                console.log(allocationResult);
+                                                var r = await jsonQuery("timeslots[timeslotid="+timeslotid+"]", {data: allocationResult}).value;
+                                                console.log(r);
+                                                if(r!=null && r.perSlotBookingNumber>0){
+                                                    r.perSlotBookingNumber = r.perSlotBookingNumber-1;
+                                                    await allocationResult.save();
+                                                    return callback(null,{message :"success","response_code":200});   
+                                                }
+                                                else{
+                                                    await orderSchema.deleteOne({roomID:temp});
+                                                    callback({code: grpc.status.NOT_FOUND,details: 'Not found'});
+                                                }
+                                            });
                                         }
                                         else{
-                                            return callback(null,{ message : "some error in backend", "response_code" : 405 });
+                                            callback({code: grpc.status.NOT_FOUND,details: 'Not found'});
                                         }
                                     }
                                     else{
-                                        return callback(null,{ message : "can't find manager", "response_code" : 404 });
+                                        return callback({code: grpc.status.NOT_FOUND,details: 'Not found'});
                                     }
                                 });
                             }
                             else{
-                                return callback(null,{ message : "can't find userid", "response_code" : 404 });
+                                return callback({code: grpc.status.NOT_FOUND,details: 'Not found'});
                             }
                         });
                     }
                     else{
-                        return callback(null,{ message : "can't find store", "response_code" : 404 });
+                        return callback({code: grpc.status.NOT_FOUND,details: 'Not found'});
                     }
                 });
             }
@@ -109,12 +140,7 @@ function placeOrder(call, callback){
         
     }
     catch(err){
-        let msg = {
-            message:"success",
-            code:200
-        };
-        
-        return callback(null,{ message : "Error", "response_code" : 404 });
+        return callback({code: grpc.status.NOT_FOUND,details: 'Not found'});
     }
 }
 

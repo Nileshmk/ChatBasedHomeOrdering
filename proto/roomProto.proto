@@ -3,7 +3,10 @@ syntax = "proto3";
 package roomPackage;
 
 service roomProto {
-  rpc placeOrder(Order) returns (Response);
+  rpc placeOrder(requestPlaceOrder) returns (Response);
+  rpc createMessage(requestCreateMessage) returns (Message);
+  rpc receiveMessage(requestReceiveMessage) returns (stream Message);
+  rpc receiveOrder(requestReceiveOrder) returns (stream Order);
 }
 
 message voidNoParam{}
@@ -88,13 +91,32 @@ message Response{
     int32 response_code = 2;
 }
 
-// message createchat {
-//   required Rooms room = 1;
-//   required Message msg = 2;
-// }
+message requestPlaceOrder{
+  string storeid = 1;
+  string userid = 2;
+  string timeslotid = 3;
+  Order order = 5;
+}
 
-// message getMessage {
-//   required Rooms room = 1;
-//   required int32 index = 2;
-// }
+message requestCreateMessage{
+  string roomID = 1;
+  string orderid = 2;
+  string userid = 3;
+  Message msg = 4;
+}
 
+message requestReceiveMessage{
+  string roomID = 1;
+  string orderid = 2;
+  string userid = 3;
+  int32 msgIndex = 4;
+}
+
+message requestReceiveOrder{
+  string userid = 1;
+  string storeid = 2;
+}
+
+message requestString{
+  string requestString = 1;
+}

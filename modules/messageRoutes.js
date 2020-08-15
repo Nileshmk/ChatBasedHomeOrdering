@@ -1,4 +1,5 @@
 let app = require('../config/firebase');
+const grpc = require('grpc');
 var userSchema = require("../models/userSchema");
 // var otpSchema = require("../models/otpSchema");
 // var chatOptionSchema = require("../models/chatSchema");
@@ -11,99 +12,128 @@ var jsonQuery = require('json-query');
 
 function createMessage(call,callback){
     // roomid, orderid, userid, msg
-    const  { roomid, orderid, userid, msg } =  call.request;
-    roomSchema.findOne({roomID:roomID},(err,roomResult)=>{
-        if(err) throw err;
-        if(roomResult){
-            var r = jsonQuery("orders[orderid="+orderid+"]", {data: roomResult}).value;
-            if(r==null){
-                for(let i = 0;i<r.userlist;i++){
-                    if(r.userlist[i].id==userid){
-                        r.messages.push(msg);
-                        var roomModel = roomResult.save();
-                        if(roomModel=== roomResult){
-                            for(let j = 0;j<r.userlist;j++){
+    const  { roomID, orderid, userid, msg } =  call.request;
+    try{
+        roomSchema.findOne({roomID:roomID},(err,roomResult)=>{
+            console.log(roomResult);
+            if(err) throw err;
+            if(roomResult){
+                var r = jsonQuery("orders[orderid="+orderid+"]", {data: roomResult}).value;
+                if(r!=null){
+                    for(let i = 0;i<r.userlist.length;i++){
+                        if(r.userlist[i].id==userid){
+                            var temp = {
+                                timestamp: new Date(),
+                                messageid: r.messages.length+1,
+                                messageText: msg.messageText,
+                                userid:msg.userid,
+                                firstName:msg.firstName,
+                                lastName:msg.lastName
+                            };
+                            // console.log(r.messages);
+                            r.messages.push(temp);
+                            // console.log(r.messages);
+                            var roomModel = roomResult.save();
+                            for(let j = 0;j<r.userlist.length;j++){
                                 if(j!=i){
-                                    sendFcm(r.userlist[i].firebaseuserid,"updated",(err,result)=>{
-                                        if(err) throw err;
-                                        if(result==null){
-                                            return callback(null,{ message : "some error", "response_code" : 405 }); 
-                                        }
-                                    });
+                                    // sendFcm(r.userlist[j].firebaseuserid,"updated",(err,result)=>{
+                                    //     if(err) throw err;
+                                    //     if(result==null){
+                                    //         return callback({
+                                    //             code: grpc.status.NOT_FOUND,
+                                    //             details: 'Not found'
+                                    //         });
+                                    //     }
+                                    // });
                                 }
                             }
-                            return callback(null,{ message : "success", "response_code" : 200 });            
+                            tt = jsonQuery("orders[orderid="+orderid+"]", {data: roomResult}).value;
+                            return callback(null,tt.messages[tt.messages.length-1]);
                         }
-                        else{
-                            return callback(null,{ message : "some error in backend", "response_code" : 405 });            
-                        }    
-                        break;
                     }
+                    callback({
+                        code: grpc.status.NOT_FOUND,
+                        details: 'Not found'
+                    });
+                    // return callback(null,{ message : "some error in backend", "response_code" : 405 });
                 }
-                return callback(null,{ message : "some error in backend", "response_code" : 405 });
+                return callback({
+                    code: grpc.status.NOT_FOUND,
+                    details: 'Not found'
+                });
+                // return callback(null,{ message : "some error in backend", "response_code" : 405 });
             }
-            return callback(null,{ message : "some error in backend", "response_code" : 405 });
-        }
-        else{
-            return callback(null,{ message : "some error in backend", "response_code" : 405 });
-        }
-    });
+            else{
+                return callback({
+                    code: grpc.status.NOT_FOUND,
+                    details: 'Not found'
+                });
+                // return callback(null,{ message : "some error in backend", "response_code" : 405 });
+            }
+        });
+    }
+    catch(err){
+        return callback({
+            code: grpc.status.NOT_FOUND,
+            details: 'Not found'
+        });
+    }
 }
 
-function readMessageStream(call,callback){
-    const  { roomid, orderid, userid, msgindex } =  call.request;
-    roomSchema.findOne({roomID:roomID},(err,roomResult)=>{
-        if(err) throw err;
-        if(roomResult){
-            var r = jsonQuery("orders[orderid="+orderid+"]", {data: roomResult}).value;
-            if(r==null){
-                for(let i = 0;i<r.userlist;i++){
-                    if(r.userlist[i].id==userid){
-                        for(let j = msgindex;j<r.mesages.length;j++){
-                            call.write(r.messages[i]);
+function receiveMessage(call,callback){
+    const  { roomID, orderid, userid, msgIndex } =  call.request;
+    try{
+        roomSchema.findOne({roomID:roomID},async(err,roomResult)=>{
+            if(err) throw err;
+            if(roomResult){
+                var r = jsonQuery("orders[orderid="+orderid+"]", {data: roomResult}).value;
+                if(r!=null){
+                    for(let i = 0;i<r.userlist.length;i++){
+                        if(r.userlist[i].id==userid){
+                            for(let j = msgIndex;j<r.messages.length;j++){
+                                await call.write(r.messages[j]);
+                            }
+                            return call.end();
                         }
-                        return call.end();
                     }
+                    // return callback(null,{ message : "some error in backend", "response_code" : 405 });
+                    return call.end();
                 }
                 // return callback(null,{ message : "some error in backend", "response_code" : 405 });
                 return call.end();
             }
-            // return callback(null,{ message : "some error in backend", "response_code" : 405 });
-            return call.end();
-        }
-        else{
-            // return callback(null,{ message : "some error in backend", "response_code" : 405 });
-            return call.end();
-        }
-    });
+            else{
+                // return callback(null,{ message : "some error in backend", "response_code" : 405 });
+                return call.end();
+            }
+        });
+    }
+    catch(err){
+        call.end();
+    }
 }
 
-function readOrdersStream(call,callback){
-    const  { roomid, orderid, userid, msgindex } =  call.request;
-    roomSchema.findOne({roomID:roomID},(err,roomResult)=>{
-        if(err) throw err;
-        if(roomResult){
-            var r = jsonQuery("orders[orderid="+orderid+"]", {data: roomResult}).value;
-            if(r==null){
-                for(let i = 0;i<r.userlist;i++){
-                    if(r.userlist[i].id==userid){
-                        for(let j = msgindex;j<r.mesages.length;j++){
-                            call.write(r.messages[i]);
-                        }
-                        return call.end();
-                    }
+function receiveOrder(call,callback){
+    const  { userid, storeid } =  call.request;
+    try{
+        roomSchema.findOne({userid:userid,storeid},async(err,roomResult)=>{
+            if(err) throw err;
+            if(roomResult){
+                for(let i = 0;i<roomResult.orders.length;i++){
+                    await call.write(roomResult.orders[i]);
                 }
                 // return callback(null,{ message : "some error in backend", "response_code" : 405 });
                 return call.end();
             }
-            // return callback(null,{ message : "some error in backend", "response_code" : 405 });
-            return call.end();
-        }
-        else{
-            // return callback(null,{ message : "some error in backend", "response_code" : 405 });
-            return call.end();
-        }
-    });
+            else{
+                // return callback(null,{ message : "some error in backend", "response_code" : 405 });
+                return call.end();
+            }
+        });
+    }
+    catch(err){
+        call.end();
+    }
 }
 
 // function createMessage(call, callback){
@@ -202,4 +232,4 @@ function sendFcm(token,box,callback){
     });
 }
 
-module.exports = {createMessage,readMessageStream};
+module.exports = {createMessage,receiveMessage, receiveOrder};

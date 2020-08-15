@@ -1,6 +1,11 @@
 const mongoose = require('mongoose');
 const roomSchema = mongoose.Schema({
-    roomID:String,
+    roomID:{
+        type: String,
+        unique: true,
+        index: true,
+        required: true
+    },
     userid:String,
     storeid:String,
     orders:[{
@@ -47,7 +52,6 @@ const roomSchema = mongoose.Schema({
             }
         ],
         messages:[{
-            _id:false,
             timestamp:String,
             messageid:Number,
             messageText:String,
