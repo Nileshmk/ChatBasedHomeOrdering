@@ -28,7 +28,8 @@ function createMessage(call,callback){
                                 messageText: msg.messageText,
                                 userid:msg.userid,
                                 firstName:msg.firstName,
-                                lastName:msg.lastName
+                                lastName:msg.lastName,
+                                status_code:msg.status_code
                             };
                             // console.log(r.messages);
                             r.messages.push(temp);
@@ -136,82 +137,37 @@ function receiveOrder(call,callback){
     }
 }
 
-// function createMessage(call, callback){
-//     try{
-//         roomSchema.findOne({roomID:call.request.room.roomID},(err,result)=>{
-//             if(err) throw err;
-//             if(result){
-//                 let msg = {
-//                     timestamp: new Date(),
-//                     messageid:result.messages.length+1,
-//                     messageText:call.request.msg.messageText,
-//                     userid:call.request.msg.userid,
-//                     firstName:call.request.msg.firstName,
-//                     lastName:call.request.msg.lastName
-//                 }
-//                 result.messages.push(msg);
-//                 const store = result.save();
-//                 sendFcm("fik_cGkcSX6hHyVsRfrp1L:APA91bGPzDTitWgj5jd697L8BgfB4melpitIP2YKTX0mh7NEhbOwE-QZ4XnIUy4XL7HIlqQ3jHtWkOyU1T2h1mMrrVl4uLkDtSCI5ml9klvwEHLWiEZjyknwXfxoxZI3-xO34aLotuJN","updated",(err,result)=>{
-//                     if(err) throw err;
-//                     if(result){
-//                         callback(null,msg);
-//                     }
-//                     else{
-//                         console.log("something problem");
-//                     }
-//                 });
-//             }
-//             else{
-//                 throw new Error('Exception message');
-//             }
-//         });
-//     }
-//     catch(err){
-//         let msg = {
-//             timestamp: new Date(),
-//             messageid:-1,
-//             messageText:"hello",
-//             userid:call.request.msg.userid,
-//             firstName:call.request.msg.firstName,
-//             lastName:call.request.msg.lastName
-//         }
-//         callback(null,msg);
-//     }
-// }
-
-// function readMessageStream(call,callback){
-//     try{
-//         roomSchema.findOne({roomID:call.request.room.roomID},(err,result)=>{
-//             if(err) throw err;
-//             if(result){
-//                 for(let i = call.request.index;i<result.messages.length;i++){
-//                     console.log(result.messages[i]);
-//                     call.write(result.messages[i]);
-//                 }
-//                 call.end();
-//             }
-//             else{
-//                 throw new Error("roomNotFound");
-//             }
-//         });
-//     }
-//     catch(err){
-//         let msg = {
-//             timestamp: new Date(),
-//             messageid:1,
-//             messageText:"hello",
-//             userid:"hello",
-//             firstName:"hello",
-//             lastName:"hello"
-//         };
-//         msgs = [];
-//         msgs.push(msg);
-//         msgs.forEach(t=> call.write(t));
-//         call.end();
-//     }
-// }
-
-// sending FCM request to one client
+function receiveAtStartup(call,callback){
+    const  { roomID, storeid, userid, updateUpto } =  call.request;
+    try{
+        roomSchema.findOne({roomID:roomID},async(err,roomResult)=>{
+            if(err) throw err;
+            if(roomResult){
+                for(let i = 0;i<updateUpto.length;i++){
+                    var r = jsonQuery("orders[orderid="+updateUpto[i].orderid+"]", {data: roomResult}).value;
+                    if(updateUpto[i].index<r.messages.length){
+                        for(let j = 0;j<r.messages.length;j++){
+                            t = {
+                                orderid:updateUpto[i].orderid,
+                                message:r.messages[j]
+                            }
+                            await call.write(t);
+                        }
+                    }
+                }
+                // return callback(null,{ message : "some error in backend", "response_code" : 405 });
+                return call.end();
+            }
+            else{
+                // return callback(null,{ message : "some error in backend", "response_code" : 405 });
+                return call.end();
+            }
+        });
+    }
+    catch(err){
+        call.end();
+    }
+}
 
 function sendFcm(token,box,callback){
     var registrationToken = token;

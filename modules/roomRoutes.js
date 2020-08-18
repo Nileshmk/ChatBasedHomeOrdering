@@ -10,6 +10,23 @@ const ObjectId = require("mongodb").ObjectID;
 const storeProductsSchema = require("../models/storeProductsSchema");
 const jsonQuery = require("json-query");
 const grpc = require('grpc');
+const color_code = ["0xffe57373",
+    "0xfff06292",
+    "0xffba68c8",
+    "0xff9575cd",
+    "0xff7986cb",
+    "0xff64b5f6",
+    "0xff4fc3f7",
+    "0xff4dd0e1",
+    "0xff4db6ac",
+    "0xff81c784",
+    "0xffaed581",
+    "0xffff8a65",
+    "0xffd4e157",
+    "0xffffd54f",
+    "0xffffb74d",
+    "0xffa1887f",
+    "0xff90a4ae"];
 function placeOrder(call, callback){
     const {storeid, userid,timeslotid,order} = call.request;
     console.log(order);
@@ -34,7 +51,8 @@ function placeOrder(call, callback){
                     starttime: starttime,
                     endtime:endtime,
                     userlist:[roomResult.orders[0].userlist[0],roomResult.orders[0].userlist[1]],
-                    messages:[]
+                    messages:[],
+                    color_code: color_code[roomResult.orders.length]
                 };
                 roomResult.orders.push(orderModel);
                 var tempo = await roomResult.save();
@@ -97,7 +115,8 @@ function placeOrder(call, callback){
                                                     id:managerResult._id,
                                                     firebaseuserid:managerResult.firebaseuserid
                                                 }],
-                                                messages:[]
+                                                messages:[],
+                                                color_code:color_code[0]
                                             }]
                                         });
                                         ordersave = await orderModel.save();

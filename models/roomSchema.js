@@ -61,8 +61,10 @@ const roomSchema = mongoose.Schema({
             messageText:String,
             userid:String,
             firstName:String,
-            lastName:String
-        }]
+            lastName:String,
+            status_code:Number
+        }],
+        color_code:String
     }]
 });
 

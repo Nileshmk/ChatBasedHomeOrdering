@@ -7,6 +7,7 @@ service roomProto {
   rpc createMessage(requestCreateMessage) returns (Message);
   rpc receiveMessage(requestReceiveMessage) returns (stream Message);
   rpc receiveOrder(requestReceiveOrder) returns (stream Order);
+  rpc receiveAtStartup(requestReceiveAtStartup) returns (stream UpdateMessage);
 }
 
 message voidNoParam{}
@@ -35,6 +36,7 @@ message Order{
   string endtime = 14;
   repeated Userlist userlist = 15;
   repeated Message messages = 16;
+  string color_code = 17;
 }
 
 message Message{
@@ -44,6 +46,7 @@ message Message{
     string userid=4;
     string firstName=5;
     string lastName=6;
+    int32 status_code=7;
 }
 
 message Product{
@@ -120,6 +123,19 @@ message requestReceiveOrder{
   string storeid = 2;
 }
 
-message requestString{
-  string requestString = 1;
+message requestReceiveAtStartup{
+  string roomID = 1;
+  string storeid = 2;
+  string userid = 3;
+  repeated UpdateUpto updateUpto = 4;
+}
+
+message UpdateUpto{
+  string orderid = 1;
+  int32 index = 2;
+}
+
+message UpdateMessage{
+  string orderid = 1;
+  Message message = 2;
 }
