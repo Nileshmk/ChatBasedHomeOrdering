@@ -188,4 +188,4 @@ function sendFcm(token,box,callback){
     });
 }
 
-module.exports = {createMessage,receiveMessage, receiveOrder};
+module.exports = {createMessage,receiveMessage, receiveOrder,receiveAtStartup};
