@@ -33,12 +33,12 @@ function placeOrder(call, callback){
                     orderType: orderType,
                     starttime: starttime,
                     endtime:endtime,
-                    userlist:[roomResult.orders[0].userlist[0],orders[0].userlist[1]],
+                    userlist:[roomResult.orders[0].userlist[0],roomResult.orders[0].userlist[1]],
                     messages:[]
                 };
-                roomResult.order.push(orderModel);
-                order = await orderModel.save();
-                if(order===orderModel){
+                roomResult.orders.push(orderModel);
+                var tempo = await roomResult.save();
+                if(tempo===roomResult){
                     await allocationSchema.findOne({_id:allocationid},async(err,allocationResult)=>{
                         console.log(allocationResult);
                         var r = await jsonQuery("timeslots[timeslotid="+timeslotid+"]", {data: allocationResult}).value;

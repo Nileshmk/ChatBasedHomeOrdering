@@ -49,11 +49,14 @@ message Message{
 message Product{
     string productid = 1;
     string productName = 2;
-    string quantity = 3;
-    int32 dsPrice = 4;
-    int32 mrpPrice = 5;
-    int32 total_quantity = 6;
-    int32 total_price = 7;
+    string quantityName = 3;
+    string quantityId = 4;
+    int32 orderQuantity = 5;
+    int32 dsPrice = 6;
+    int32 mrpPrice = 7;
+    bool outOfStock = 8;
+    int32 total_quantity = 9;
+    int32 total_price = 10;
 }
 
 message Userlist{

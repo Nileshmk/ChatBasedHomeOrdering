@@ -30,10 +30,14 @@ const roomSchema = mongoose.Schema({
         products: [{
             productid:String,
             productName : String,
-            quantity : String,
+            quantityName : String,
+            quantityId : String,
+            orderQuantity : Number,
             dsPrice : Number,
             mrpPrice : Number,
+            outOfStock:false,
             total_quantity : Number,
+            issueQuantity: Number,
             total_price: Number
         }],
         itemSubtotal : Number,
