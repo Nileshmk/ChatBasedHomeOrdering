@@ -1,5 +1,5 @@
 var userSchema = require("../models/userSchema");
-// var otpSchema = require("../models/otpSchema");
+let app = require('../config/firebase');
 // var chatOptionSchema = require("../models/chatSchema");
 var orderSummarySchema = require("../models/OrderSummary");
 var allocationSchema = require("../models/allocationSchema");
@@ -51,7 +51,15 @@ function placeOrder(call, callback){
                     starttime: starttime,
                     endtime:endtime,
                     userlist:[roomResult.orders[0].userlist[0],roomResult.orders[0].userlist[1]],
-                    messages:[],
+                    messages:[{
+                        timestamp: new Date(),
+                        messageid:1,
+                        messageText:"Your Order has been Placed",
+                        userid:userid,
+                        firstName:userResult.firstName,
+                        lastName:userResult.lastName,
+                        status_code:201
+                    }],
                     color_code: color_code[roomResult.orders.length]
                 };
                 roomResult.orders.push(orderModel);
@@ -64,8 +72,10 @@ function placeOrder(call, callback){
                         if(r!=null && r.perSlotBookingNumber>0){
                             r.perSlotBookingNumber = r.perSlotBookingNumber-1;
                             await allocationResult.save();
-                            // return callback(null,{message :"success","response_code":200});   
-                            return callback(null,{message :"success","response_code":200});   
+                            sendFcm(roomResult.orders[0].userlist[1].firebaseuserid,"updated",(err,result)=>{
+                                if(err) throw err;
+                                return callback(null,{message :"success","response_code":200});   
+                            });   
                         }
                         else{
                             roomResult.order.pop();
@@ -115,7 +125,15 @@ function placeOrder(call, callback){
                                                     id:managerResult._id,
                                                     firebaseuserid:managerResult.firebaseuserid
                                                 }],
-                                                messages:[],
+                                                messages:[{
+                                                    timestamp: new Date(),
+                                                    messageid:1,
+                                                    messageText:"Your Order has been Placed",
+                                                    userid:userid,
+                                                    firstName:userResult.firstName,
+                                                    lastName:userResult.lastName,
+                                                    status_code:201
+                                                }],
                                                 color_code:color_code[0]
                                             }]
                                         });
@@ -128,7 +146,11 @@ function placeOrder(call, callback){
                                                 if(r!=null && r.perSlotBookingNumber>0){
                                                     r.perSlotBookingNumber = r.perSlotBookingNumber-1;
                                                     await allocationResult.save();
-                                                    return callback(null,{message :"success","response_code":200});   
+                                                    sendFcm(roomResult.orders[0].userlist[1].firebaseuserid,"updated",(err,result)=>{
+                                                        if(err) throw err;
+                                                        return callback(null,{message :"success","response_code":200});   
+                                                    });
+                                                    // return callback(null,{message :"success","response_code":200});   
                                                 }
                                                 else{
                                                     await orderSchema.deleteOne({roomID:temp});
@@ -161,6 +183,25 @@ function placeOrder(call, callback){
     catch(err){
         return callback({code: grpc.status.NOT_FOUND,details: 'Not found'});
     }
+}
+
+function sendFcm(token,box,callback){
+    var registrationToken = token;
+    var message = {
+      data : {
+          "message":box
+        },
+      token: registrationToken
+    };
+    app.messaging().send(message)
+    .then((response) => {
+      // Response is a message ID string.
+      return callback(null,response);
+    })
+    .catch((error) => {
+       return callback(error,null);
+      // console.log('Error sending message:', error);
+    });
 }
 
 module.exports = {placeOrder};

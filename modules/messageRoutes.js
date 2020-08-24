@@ -37,19 +37,13 @@ function createMessage(call,callback){
                             var roomModel = roomResult.save();
                             for(let j = 0;j<r.userlist.length;j++){
                                 if(j!=i){
-                                    // sendFcm(r.userlist[j].firebaseuserid,"updated",(err,result)=>{
-                                    //     if(err) throw err;
-                                    //     if(result==null){
-                                    //         return callback({
-                                    //             code: grpc.status.NOT_FOUND,
-                                    //             details: 'Not found'
-                                    //         });
-                                    //     }
-                                    // });
+                                    sendFcm(r.userlist[j].firebaseuserid,"updated",(err,result)=>{
+                                        if(err) throw err;
+                                        tt = jsonQuery("orders[orderid="+orderid+"]", {data: roomResult}).value;
+                                        return callback(null,tt.messages[tt.messages.length-1]);
+                                    });
                                 }
                             }
-                            tt = jsonQuery("orders[orderid="+orderid+"]", {data: roomResult}).value;
-                            return callback(null,tt.messages[tt.messages.length-1]);
                         }
                     }
                     callback({
@@ -146,7 +140,7 @@ function receiveAtStartup(call,callback){
                 for(let i = 0;i<updateUpto.length;i++){
                     var r = jsonQuery("orders[orderid="+updateUpto[i].orderid+"]", {data: roomResult}).value;
                     if(updateUpto[i].index<r.messages.length){
-                        for(let j = 0;j<r.messages.length;j++){
+                        for(let j = updateUpto[i].index;j<r.messages.length;j++){
                             t = {
                                 orderid:updateUpto[i].orderid,
                                 message:r.messages[j]
