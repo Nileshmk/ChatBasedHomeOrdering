@@ -12,7 +12,7 @@ message voidNoParam{}
 message Message {
   string timestamp=1;
   int32 messageid=2;
-  string messageText=3;
+  string message=3;
   string userid=4;
   string firstName=5;
   string lastName=6;
@@ -23,7 +23,7 @@ message Messages{
 }
 
 message Rooms {
-  string roomID=1;
+  string roomId=1;
   string orderid=2;
   repeated Message messages = 3;
 }

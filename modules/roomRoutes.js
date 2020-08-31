@@ -10,7 +10,7 @@ const ObjectId = require("mongodb").ObjectID;
 const storeProductsSchema = require("../models/storeProductsSchema");
 const jsonQuery = require("json-query");
 const grpc = require('grpc');
-const color_code = ["0xffe57373",
+const colorCode = ["0xffe57373",
     "0xfff06292",
     "0xffba68c8",
     "0xff9575cd",
@@ -27,80 +27,101 @@ const color_code = ["0xffe57373",
     "0xffffb74d",
     "0xffa1887f",
     "0xff90a4ae"];
+
 function placeOrder(call, callback){
     const {storeid, userid,timeslotid,order} = call.request;
     console.log(order);
     const { orderid, usercontact,userAddress,timestamp , products, itemSubtotal,GST,delCharges,serviceCharges, TotalAmount, allocationid,orderType,starttime,endtime } =  order;
     try{
-        roomSchema.findOne({userid:userid,storeid:storeid},async(err,roomResult)=>{
+        userSchema.findOne({_id:userid},async(err,userResult)=>{
             if(err) throw err;
-            if(roomResult){
-                var orderModel = {
-                    orderid : new ObjectId(),
-                    usercontact: usercontact,
-                    userAddress: userAddress,
-                    timestamp: new Date(),
-                    products: products,
-                    itemSubtotal : itemSubtotal,
-                    GST: GST,
-                    delCharges: delCharges,
-                    serviceCharges: serviceCharges,
-                    TotalAmount: TotalAmount,
-                    allocationid: allocationid,
-                    orderType: orderType,
-                    starttime: starttime,
-                    endtime:endtime,
-                    userlist:[roomResult.orders[0].userlist[0],roomResult.orders[0].userlist[1]],
-                    messages:[{
-                        timestamp: new Date(),
-                        messageid:1,
-                        messageText:"Your Order has been Placed",
-                        userid:userid,
-                        firstName:userResult.firstName,
-                        lastName:userResult.lastName,
-                        status_code:201
-                    }],
-                    color_code: color_code[roomResult.orders.length]
-                };
-                roomResult.orders.push(orderModel);
-                var tempo = await roomResult.save();
-                if(tempo===roomResult){
-                    await allocationSchema.findOne({_id:allocationid},async(err,allocationResult)=>{
-                        console.log(allocationResult);
-                        var r = await jsonQuery("timeslots[timeslotid="+timeslotid+"]", {data: allocationResult}).value;
-                        console.log(r);
-                        if(r!=null && r.perSlotBookingNumber>0){
-                            r.perSlotBookingNumber = r.perSlotBookingNumber-1;
-                            await allocationResult.save();
-                            sendFcm(roomResult.orders[0].userlist[1].firebaseuserid,"updated",(err,result)=>{
-                                if(err) throw err;
-                                return callback(null,{message :"success","response_code":200});   
-                            });   
+            if(userResult){
+                await roomSchema.findOne({userid:userid,storeid:storeid},async(err,roomResult)=>{
+                    if(err) throw err;
+                    if(roomResult){
+                        var orderModel = {
+                            orderid : new ObjectId(),
+                            usercontact: usercontact,
+                            userAddress: userAddress,
+                            timestamp: new Date(),
+                            products: products,
+                            itemSubtotal : itemSubtotal,
+                            GST: GST,
+                            delCharges: delCharges,
+                            serviceCharges: serviceCharges,
+                            TotalAmount: TotalAmount,
+                            allocationid: allocationid,
+                            orderType: orderType,
+                            starttime: starttime,
+                            endtime:endtime,
+                            userlist:[roomResult.orders[0].userlist[0],roomResult.orders[0].userlist[1]],
+                            messages:[{
+                                timestamp: new Date(),
+                                messageid:roomResult.lastMessageId+1,
+                                message:"Your Order has been Placed",
+                                userid:userid,
+                                firstName:userResult.firstname,
+                                lastName:userResult.lastname,
+                                orderstatuscode:201,
+                                profilePicUrl:userResult.profileUrl,
+                                senderUserType:"customer"
+                            }],
+                            colorCode: colorCode[roomResult.orders.length]
+                        };
+                        roomResult.orders.push(orderModel);
+                        var tempo = await roomResult.save();
+                        if(tempo===roomResult){
+                            await allocationSchema.findOne({_id:allocationid},async(err,allocationResult)=>{
+                                console.log(allocationResult);
+                                var r = await jsonQuery("timeslots[timeslotid="+timeslotid+"]", {data: allocationResult}).value;
+                                console.log(r);
+                                if(r!=null && r.perSlotBookingNumber>0){
+                                    r.perSlotBookingNumber = r.perSlotBookingNumber-1;
+                                    await allocationResult.save();
+                                    sendFcm(roomResult.orders[0].userlist[1].firebaseuserid,"updated",(err,result)=>{
+                                        if(err) throw err;
+                                        let msg={
+                                            messageid:roomResult.lastMessageId+1,
+                                            roomId:roomResult.roomId,
+                                            orderid:orderModel.orderid,
+                                            userid:userid,
+                                            orderstatuscode:201,
+                                            message:"Your Order has been Placed",
+                                            messagetype:"info",
+                                            timestamp: new Date(),
+                                            firstName:userResult.firstname,
+                                            lastName:userResult.lastname,
+                                            profilePicUrl:userResult.profileUrl,
+                                            OrderType:orderModel.orderType,
+                                            OrderEnd:orderModel.endtime,
+                                            senderUserType:"customer",
+                                            colorCode:orderModel.colorCode
+                                        };
+                                        console.log(msg);
+                                        return callback(null,msg);   
+                                    });   
+                                }
+                                else{
+                                    roomResult.orders.pop();
+                                    await roomResult.save();
+                                    callback({code: grpc.status.NOT_FOUND,details: 'Not found'});
+                                }
+                            });
                         }
                         else{
-                            roomResult.order.pop();
-                            await orderModel.save();
                             callback({code: grpc.status.NOT_FOUND,details: 'Not found'});
                         }
-                    });
-                }
-                else{
-                    callback({code: grpc.status.NOT_FOUND,details: 'Not found'});
-                }
-            }
-            else{
-                await storeProductsSchema.findOne({storeid:storeid},async(err,storeResult)=>{
-                    if(err) throw err;
-                    if(storeResult){
-                        await userSchema.findOne({_id:userid},async(err,userResult)=>{
+                    }
+                    else{
+                        await storeProductsSchema.findOne({storeid:storeid},async(err,storeResult)=>{
                             if(err) throw err;
-                            if(userResult){
+                            if(storeResult){
                                 await employeeSchema.findOne({storeid:storeid,"userType.manager":true},async(err,managerResult)=>{
                                     if(err) throw err;
                                     if(managerResult){
                                         var temp = new ObjectId();
                                         var orderModel = new roomSchema({
-                                            roomID: temp,
+                                            roomId: temp,
                                             storeid: storeResult.storeid,
                                             userid: userResult._id,
                                             orders:[{
@@ -128,14 +149,17 @@ function placeOrder(call, callback){
                                                 messages:[{
                                                     timestamp: new Date(),
                                                     messageid:1,
-                                                    messageText:"Your Order has been Placed",
+                                                    message:"Your Order has been Placed",
                                                     userid:userid,
-                                                    firstName:userResult.firstName,
-                                                    lastName:userResult.lastName,
-                                                    status_code:201
+                                                    firstName:userResult.firstname,
+                                                    lastName:userResult.lastname,
+                                                    orderstatuscode:201,
+                                                    profilePicUrl:userResult.profileUrl,
+                                                    senderUserType:"customer"
                                                 }],
-                                                color_code:color_code[0]
-                                            }]
+                                                colorCode:colorCode[0]
+                                            }],
+                                            lastMessageId:1
                                         });
                                         ordersave = await orderModel.save();
                                         if(ordersave===orderModel){
@@ -146,14 +170,31 @@ function placeOrder(call, callback){
                                                 if(r!=null && r.perSlotBookingNumber>0){
                                                     r.perSlotBookingNumber = r.perSlotBookingNumber-1;
                                                     await allocationResult.save();
-                                                    sendFcm(roomResult.orders[0].userlist[1].firebaseuserid,"updated",(err,result)=>{
+                                                    sendFcm(ordersave.orders[0].userlist[1].firebaseuserid,"updated",(err,result)=>{
                                                         if(err) throw err;
-                                                        return callback(null,{message :"success","response_code":200});   
+                                                        let msg={
+                                                            messageid:1,
+                                                            roomId:temp,
+                                                            orderid:ordersave.orders[0].orderid,
+                                                            userid:userid,
+                                                            orderstatuscode:201,
+                                                            message:"Your Order has been Placed",
+                                                            messagetype:"info",
+                                                            timestamp: new Date(),
+                                                            firstName:userResult.firstname,
+                                                            lastName:userResult.lastname,
+                                                            profilePicUrl:userResult.profileUrl,
+                                                            OrderType:ordersave.orders[0].orderType,
+                                                            OrderEnd:ordersave.orders[0].endtime,
+                                                            senderUserType:"customer",
+                                                            colorCode:ordersave.orders[0].colorCode
+                                                        };
+                                                        return callback(null,msg);    
                                                     });
                                                     // return callback(null,{message :"success","response_code":200});   
                                                 }
                                                 else{
-                                                    await orderSchema.deleteOne({roomID:temp});
+                                                    await orderSchema.deleteOne({roomId:temp});
                                                     callback({code: grpc.status.NOT_FOUND,details: 'Not found'});
                                                 }
                                             });
@@ -166,18 +207,19 @@ function placeOrder(call, callback){
                                         return callback({code: grpc.status.NOT_FOUND,details: 'Not found'});
                                     }
                                 });
+                                
                             }
                             else{
                                 return callback({code: grpc.status.NOT_FOUND,details: 'Not found'});
                             }
                         });
                     }
-                    else{
-                        return callback({code: grpc.status.NOT_FOUND,details: 'Not found'});
-                    }
                 });
             }
-        })
+            else{
+                return callback({code: grpc.status.NOT_FOUND,details: 'Not found'});
+            }
+        });
         
     }
     catch(err){

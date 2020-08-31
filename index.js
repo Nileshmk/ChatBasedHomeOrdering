@@ -34,14 +34,16 @@ server.bind("0.0.0.0:40000", grpc.ServerCredentials.createInsecure());
 // });
 
 const { placeOrder } = require('./modules/roomRoutes');
-const { createMessage, receiveMessage,receiveOrder,receiveAtStartup} = require("./modules/messageRoutes");
+const { createMessage, getAllMessages,getRecentMessageUpdate} = require("./modules/messageRoutes");
+const {getDutyEmployees, assignEmployeeTask} = require("./modules/employeeRoutes");
 server.addService(roomPackage.roomProto.service,
 {
     "placeOrder":placeOrder,
     "createMessage":createMessage,
-    "receiveMessage":receiveMessage,
-    "receiveOrder":receiveOrder,
-    "receiveAtStartup":receiveAtStartup
+    "getAllMessages":getAllMessages,
+    "getRecentMessageUpdate":getRecentMessageUpdate,
+    "getDutyEmployees":getDutyEmployees,
+    "assignEmployeeTask":assignEmployeeTask
 });
 
 server.start();

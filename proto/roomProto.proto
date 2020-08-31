@@ -3,17 +3,18 @@ syntax = "proto3";
 package roomPackage;
 
 service roomProto {
-  rpc placeOrder(requestPlaceOrder) returns (Response);
+  rpc placeOrder(requestPlaceOrder) returns (UpdateMessage);
   rpc createMessage(requestCreateMessage) returns (Message);
-  rpc receiveMessage(requestReceiveMessage) returns (stream Message);
-  rpc receiveOrder(requestReceiveOrder) returns (stream Order);
-  rpc receiveAtStartup(requestReceiveAtStartup) returns (stream UpdateMessage);
+  rpc getAllMessages(requestReceiveMessage) returns (stream UpdateMessage);
+  rpc getRecentMessageUpdate(requestReceiveAtStartup) returns (stream UpdateMessage);
+  rpc getDutyEmployees(requestGetDutyEmployees) returns (Employees);
+  rpc assignEmployeeTask(requestAssignEmployeeTask) returns (Response);
 }
 
 message voidNoParam{}
 
 message Room {
-  string roomID=1;
+  string roomId=1;
   string userid=2;
   string storeid=3;
   repeated Order orders = 4;
@@ -36,17 +37,20 @@ message Order{
   string endtime = 14;
   repeated Userlist userlist = 15;
   repeated Message messages = 16;
-  string color_code = 17;
+  string colorCode = 17;
 }
 
 message Message{
-    string timestamp=1;
-    int32 messageid=2;
-    string messageText=3;
-    string userid=4;
-    string firstName=5;
-    string lastName=6;
-    int32 status_code=7;
+  int32 messageid=1;
+  string userid=2;
+  int32 orderstatuscode=3;
+  string message=4;
+  string messagetype=5;
+  string timestamp=6;
+  string firstName=7;
+  string lastName=8;
+  string profilePicUrl=9;
+  string senderUserType=10;
 }
 
 message Product{
@@ -105,26 +109,18 @@ message requestPlaceOrder{
 }
 
 message requestCreateMessage{
-  string roomID = 1;
+  string roomId = 1;
   string orderid = 2;
   string userid = 3;
   Message msg = 4;
 }
 
 message requestReceiveMessage{
-  string roomID = 1;
-  string orderid = 2;
-  string userid = 3;
-  int32 msgIndex = 4;
-}
-
-message requestReceiveOrder{
-  string userid = 1;
-  string storeid = 2;
+  string userid=1;
 }
 
 message requestReceiveAtStartup{
-  string roomID = 1;
+  string roomId = 1;
   string storeid = 2;
   string userid = 3;
   repeated UpdateUpto updateUpto = 4;
@@ -136,6 +132,43 @@ message UpdateUpto{
 }
 
 message UpdateMessage{
-  string orderid = 1;
-  Message message = 2;
+  int32 messageid=1;
+  string roomId=2;
+  string orderid=3;
+  string userid=4;
+  int32 orderstatuscode=5;
+  string message=6;
+  string messagetype=7;
+  string timestamp=8;
+  string firstName=9;
+  string lastName=10;
+  string profilePicUrl=11;
+  string OrderType=12;
+  string OrderEnd=13;
+  string senderUserType=14;
+  string colorCode=15;
 }
+
+message requestGetDutyEmployees{
+  string storeid = 1;
+  string Duty = 2;
+}
+
+message Employees{
+  repeated Employee employees=1;
+}
+message Employee{
+  string employee_id=1;
+  string employee_fname=2;
+  string employee_lname=3;
+  bool on_duty=4;
+  int32 task_assigned=5;
+}
+
+message requestAssignEmployeeTask{
+  string employeeid=1;
+  string orderid=2;
+  string storeid=3;
+  string job=4;
+}
+

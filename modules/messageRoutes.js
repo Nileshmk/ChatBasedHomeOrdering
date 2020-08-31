@@ -12,9 +12,9 @@ var jsonQuery = require('json-query');
 
 function createMessage(call,callback){
     // roomid, orderid, userid, msg
-    const  { roomID, orderid, userid, msg } =  call.request;
+    const  { roomId, orderid, userid, msg } =  call.request;
     try{
-        roomSchema.findOne({roomID:roomID},(err,roomResult)=>{
+        roomSchema.findOne({roomId:roomId},(err,roomResult)=>{
             console.log(roomResult);
             if(err) throw err;
             if(roomResult){
@@ -23,30 +23,35 @@ function createMessage(call,callback){
                     for(let i = 0;i<r.userlist.length;i++){
                         if(r.userlist[i].id==userid){
                             var temp = {
-                                timestamp: new Date(),
-                                messageid: r.messages.length+1,
-                                messageText: msg.messageText,
+                                messageid: roomResult.lastMessageId+1,
                                 userid:msg.userid,
+                                orderstatuscode:msg.orderstatuscode,
+                                message: msg.message,
+                                messagetype:msg.messagetype,
+                                timestamp: new Date(),
                                 firstName:msg.firstName,
                                 lastName:msg.lastName,
-                                status_code:msg.status_code
+                                profilePicUrl:msg.profilePicUrl,
+                                senderUserType:msg.senderUserType
                             };
                             // console.log(r.messages);
                             r.messages.push(temp);
                             // console.log(r.messages);
+                            roomResult.lastMessageId = roomResult.lastMessageId+1;
                             var roomModel = roomResult.save();
                             for(let j = 0;j<r.userlist.length;j++){
                                 if(j!=i){
                                     sendFcm(r.userlist[j].firebaseuserid,"updated",(err,result)=>{
                                         if(err) throw err;
-                                        tt = jsonQuery("orders[orderid="+orderid+"]", {data: roomResult}).value;
-                                        return callback(null,tt.messages[tt.messages.length-1]);
                                     });
                                 }
                             }
+                            
+                            // tt = jsonQuery("orders[orderid="+orderid+"]", {data: roomResult}).value;
+                            return callback(null,temp);
                         }
                     }
-                    callback({
+                    return callback({
                         code: grpc.status.NOT_FOUND,
                         details: 'Not found'
                     });
@@ -75,88 +80,96 @@ function createMessage(call,callback){
     }
 }
 
-function receiveMessage(call,callback){
-    const  { roomID, orderid, userid, msgIndex } =  call.request;
+function getAllMessages(call,callback){
+    const  {userid} =  call.request;
     try{
-        roomSchema.findOne({roomID:roomID},async(err,roomResult)=>{
+        roomSchema.find({"orders.userlist.id":userid},async(err,roomResults)=>{
             if(err) throw err;
-            if(roomResult){
-                var r = jsonQuery("orders[orderid="+orderid+"]", {data: roomResult}).value;
-                if(r!=null){
-                    for(let i = 0;i<r.userlist.length;i++){
-                        if(r.userlist[i].id==userid){
-                            for(let j = msgIndex;j<r.messages.length;j++){
-                                await call.write(r.messages[j]);
-                            }
-                            return call.end();
+            for(let i = 0;i<roomResults.length;i++){
+                roomResult = roomResults[i];
+                for(let j = 0;j<roomResult.orders.length;j++){
+                    let cas = false;
+                    for(let k = 0;k<roomResult.orders[j].userlist.length;k++){
+                        if(roomResult.orders[j].userlist[k].id==userid){
+                            cas = true;
                         }
                     }
-                    // return callback(null,{ message : "some error in backend", "response_code" : 405 });
-                    return call.end();
+                    if(cas){
+                        for(let k = 0;k<roomResult.orders[j].messages.length;k++){
+                            let msg = JSON.parse(JSON.stringify(roomResult.orders[j].messages[k]));
+                            msg.roomId = roomResult.roomId;
+                            msg.orderid = roomResult.orders[j].orderid;
+                            msg.orderType = roomResult.orders[j].orderType;
+                            msg.orderEnd = roomResult.orders[j].endtime;
+                            msg.colorCode = roomResult.orders[j].colorCode;
+                            await call.write(msg);
+                        }
+                    }
                 }
-                // return callback(null,{ message : "some error in backend", "response_code" : 405 });
-                return call.end();
             }
-            else{
-                // return callback(null,{ message : "some error in backend", "response_code" : 405 });
-                return call.end();
-            }
+            // return callback(null,{ message : "some error in backend", "response_code" : 405 });
         });
+        return call.end();
     }
     catch(err){
         call.end();
     }
 }
 
-function receiveOrder(call,callback){
-    const  { userid, storeid } =  call.request;
-    try{
-        roomSchema.findOne({userid:userid,storeid},async(err,roomResult)=>{
-            if(err) throw err;
-            if(roomResult){
-                for(let i = 0;i<roomResult.orders.length;i++){
-                    await call.write(roomResult.orders[i]);
-                }
-                // return callback(null,{ message : "some error in backend", "response_code" : 405 });
-                return call.end();
-            }
-            else{
-                // return callback(null,{ message : "some error in backend", "response_code" : 405 });
-                return call.end();
-            }
-        });
-    }
-    catch(err){
-        call.end();
-    }
-}
+// function receiveOrder(call,callback){
+//     const  { userid, storeid } =  call.request;
+//     try{
+//         roomSchema.findOne({userid:userid,storeid},async(err,roomResult)=>{
+//             if(err) throw err;
+//             if(roomResult){
+//                 for(let i = 0;i<roomResult.orders.length;i++){
+//                     await call.write(roomResult.orders[i]);
+//                 }
+//                 // return callback(null,{ message : "some error in backend", "response_code" : 405 });
+//                 return call.end();
+//             }
+//             else{
+//                 // return callback(null,{ message : "some error in backend", "response_code" : 405 });
+//                 return call.end();
+//             }
+//         });
+//     }
+//     catch(err){
+//         call.end();
+//     }
+// }
 
-function receiveAtStartup(call,callback){
-    const  { roomID, storeid, userid, updateUpto } =  call.request;
+function getRecentMessageUpdate(call,callback){
+    const  { userid, updates } =  call.request;
     try{
-        roomSchema.findOne({roomID:roomID},async(err,roomResult)=>{
-            if(err) throw err;
-            if(roomResult){
-                for(let i = 0;i<updateUpto.length;i++){
-                    var r = jsonQuery("orders[orderid="+updateUpto[i].orderid+"]", {data: roomResult}).value;
-                    if(updateUpto[i].index<r.messages.length){
-                        for(let j = updateUpto[i].index;j<r.messages.length;j++){
-                            t = {
-                                orderid:updateUpto[i].orderid,
-                                message:r.messages[j]
+        for(let i = 0;i<updates.length;i++){
+            roomSchema.findOne({roomId:updates[i].roomId},async(err,roomResult)=>{
+                if(err) throw err;
+                if(roomResult){
+                    for(let j=0;j<roomResult.orders.length;j++){
+                        let cas = false;
+                        for(let k = 0;k<roomResult.orders[j].userlist.length;k++){
+                            if(roomResult.orders[j].userlist[k]==userid) cas = true;
+                        }
+                        if(cas){
+                            for(let k = 0;k<roomResult.orders[j].messages.length;k++){
+                                if(roomResult.orders[j].messages[k].messageid>updates[i].lastMessageId){
+                                    let msg = JSON.parse(JSON.stringify(roomResult.orders[j].messages[k]));
+                                    msg.roomId = roomResult.roomId;
+                                    msg.orderid = roomResult.orders[j].orderid;
+                                    msg.orderType = roomResult.orders[j].orderType;
+                                    msg.orderEnd = roomResult.orders[j].endtime;
+                                    msg.colorCode = roomResult.orders[j].colorCode;
+                                    await call.write(msg);
+                                }
                             }
-                            await call.write(t);
                         }
                     }
                 }
-                // return callback(null,{ message : "some error in backend", "response_code" : 405 });
-                return call.end();
+                    // var r = jsonQuery("orders.messages", {data: result}).value;
+                });
             }
-            else{
-                // return callback(null,{ message : "some error in backend", "response_code" : 405 });
-                return call.end();
-            }
-        });
+        return call.end();
     }
     catch(err){
         call.end();
@@ -182,4 +195,4 @@ function sendFcm(token,box,callback){
     });
 }
 
-module.exports = {createMessage,receiveMessage, receiveOrder,receiveAtStartup};
+module.exports = {createMessage,getAllMessages,getRecentMessageUpdate};

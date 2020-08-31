@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const roomSchema = mongoose.Schema({
-    roomID:{
+    roomId:{
         type: String,
         unique: true,
         index: true,
@@ -56,16 +56,20 @@ const roomSchema = mongoose.Schema({
             }
         ],
         messages:[{
-            timestamp:String,
             messageid:Number,
-            messageText:String,
             userid:String,
+            orderstatuscode:Number,
+            message:String,
+            messagetype:String,
+            timestamp:String,
             firstName:String,
             lastName:String,
-            status_code:Number
+            profilePicUrl:String,
+            senderUserType:String
         }],
-        color_code:String
-    }]
+        colorCode:String
+    }],
+    lastMessageId:Number
 });
 
 module.exports = mongoose.model('rooms', roomSchema);

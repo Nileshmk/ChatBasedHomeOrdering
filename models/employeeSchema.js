@@ -37,6 +37,10 @@ const employeeSchema = mongoose.Schema({
     storeAddress:{
         type:String,
         default: null
+    },
+    taskAssigned:{
+        type:Number,
+        default: 0
     }
 });
 
