@@ -9,6 +9,37 @@ service roomProto {
   rpc getRecentMessageUpdate(requestReceiveAtStartup) returns (stream UpdateMessage);
   rpc getDutyEmployees(requestGetDutyEmployees) returns (Employees);
   rpc assignEmployeeTask(requestAssignEmployeeTask) returns (Response);
+  // second phase
+  rpc getOrderedProductstoShopper(requestOrderInfo) returns (OrdersList);
+  rpc afterPackingByShopper(OrdersList) returns (Response);
+  rpc getPackedProductstoCustomer(requestOrderInfo) returns (OrdersList);
+  rpc afterReviewByCustomer(OrdersList) returns (Response);
+}
+
+message requestOrderInfo{
+  string storeid = 1;
+  string orderid = 2;
+}
+
+message OrdersList{
+  string orderid = 1;
+  repeated OrderListProduct products= 2;
+}
+
+message OrderListProduct{
+  string productid = 1;
+  string orderid = 2;
+  string quantityId = 3;
+  string productName = 4;
+  string quantityName = 5;
+  int32 dsPrice = 6;
+  int32 mrpPrice = 7;
+  string status = 8;
+  int32 orderQuantity = 9;
+  int32 issueQuantity = 10;  
+  bool outOfStock = 11;
+  int32 total_quantity = 12;
+  int32 total_price = 13;
 }
 
 message voidNoParam{}
@@ -120,15 +151,13 @@ message requestReceiveMessage{
 }
 
 message requestReceiveAtStartup{
-  string roomId = 1;
-  string storeid = 2;
-  string userid = 3;
-  repeated UpdateUpto updateUpto = 4;
+  string userid = 1;
+  repeated Updates updates = 2;
 }
 
-message UpdateUpto{
-  string orderid = 1;
-  int32 index = 2;
+message Updates{
+  string roomId = 1;
+  int32 lastMessageId = 2;
 }
 
 message UpdateMessage{
@@ -143,8 +172,8 @@ message UpdateMessage{
   string firstName=9;
   string lastName=10;
   string profilePicUrl=11;
-  string OrderType=12;
-  string OrderEnd=13;
+  string orderType=12;
+  string orderEnd=13;
   string senderUserType=14;
   string colorCode=15;
 }
@@ -158,11 +187,11 @@ message Employees{
   repeated Employee employees=1;
 }
 message Employee{
-  string employee_id=1;
-  string employee_fname=2;
-  string employee_lname=3;
-  bool on_duty=4;
-  int32 task_assigned=5;
+  string employeeid=1;
+  string firstName=2;
+  string lastName=3;
+  bool onduty=4;
+  int32 taskAssigned=5;
 }
 
 message requestAssignEmployeeTask{
@@ -171,4 +200,3 @@ message requestAssignEmployeeTask{
   string storeid=3;
   string job=4;
 }
-

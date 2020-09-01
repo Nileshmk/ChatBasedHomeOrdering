@@ -3,6 +3,8 @@ var roomSchema = require("../models/roomSchema");
 var userSchema = require("../models/userSchema");
 var storeProductSchema = require("../models/storeProductsSchema");
 var employeeSchema = require("../models/employeeSchema");
+var allocationSchema = require("../models/allocationSchema");
+
 
 const mongoose = require("mongoose");
 const keys = require("../config/keys");
@@ -15,22 +17,32 @@ mongoose.connect(keys.mongodb.dbOrg, () => {
 //     console.log(result);
 // });
 
-// employeeSchema.findOne({employeeid:"5f0825a4c1474a00343e7bae"},async(err,managerResult)=>{
+// employeeSchema.find({"userType.packingHelper": true},"employeeid firstName lastName onduty taskAssigned",(err,managerResult)=>{
 //     console.log(managerResult);
 // });
 // storeProductSchema.find({storeid:"5ef1a64cc729500c79aa2db8"},(err,result)=>{
 //         console.log(result);
 // })
-roomSchema.find({},(err,result)=>{
+// allocationSchema.findOne({_id:"5f4a14e794100d0034347741"},(err,result)=>{
+//   console.log(result);
+//   result.timeslots[0].perSlotBookingNumber = 30;
+//   result.save();
+// })
+roomSchema.findOne({roomId:"5f4d3cddc117e15ee67d4d8a"},(err,result)=>{
+  if(err) throw err;
   console.log(result);
-  for(let i = 0;i<result[0].orders.length;i++){
-    console.log(result[0].orders[i]);
+  for(let i = 0;i<result.orders.length;i++){
+    console.log(result.orders[i].userlist);
   }
 });
 
-// userSchema.find({},(err,result)=>{
-//     // var r = jsonQuery("timeslots[timeslotid="+"5f2593f37f505c0034b60c18"+"]", {data: result}).value;
-//     // console.log(r.perSlotBookingNumber);
-//     console.log(JSON.stringify(result));
-// });
+// roomSchema.deleteMany({},(err,result)=>{
+//   console.log("deleted")
+// })
+
+userSchema.find({},(err,result)=>{
+    // var r = jsonQuery("timeslots[timeslotid="+"5f2593f37f505c0034b60c18"+"]", {data: result}).value;
+    // console.log(r.perSlotBookingNumber);
+    console.log(result);
+});
 

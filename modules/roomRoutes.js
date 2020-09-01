@@ -59,6 +59,7 @@ function placeOrder(call, callback){
                                 timestamp: new Date(),
                                 messageid:roomResult.lastMessageId+1,
                                 message:"Your Order has been Placed",
+                                messagetype:"info",
                                 userid:userid,
                                 firstName:userResult.firstname,
                                 lastName:userResult.lastname,
@@ -68,6 +69,7 @@ function placeOrder(call, callback){
                             }],
                             colorCode: colorCode[roomResult.orders.length]
                         };
+                        roomResult.lastMessageId = roomResult.lastMessageId+1;
                         roomResult.orders.push(orderModel);
                         var tempo = await roomResult.save();
                         if(tempo===roomResult){
@@ -81,7 +83,7 @@ function placeOrder(call, callback){
                                     sendFcm(roomResult.orders[0].userlist[1].firebaseuserid,"updated",(err,result)=>{
                                         if(err) throw err;
                                         let msg={
-                                            messageid:roomResult.lastMessageId+1,
+                                            messageid:roomResult.lastMessageId,
                                             roomId:roomResult.roomId,
                                             orderid:orderModel.orderid,
                                             userid:userid,
@@ -92,8 +94,8 @@ function placeOrder(call, callback){
                                             firstName:userResult.firstname,
                                             lastName:userResult.lastname,
                                             profilePicUrl:userResult.profileUrl,
-                                            OrderType:orderModel.orderType,
-                                            OrderEnd:orderModel.endtime,
+                                            orderType:orderModel.orderType,
+                                            orderEnd:orderModel.endtime,
                                             senderUserType:"customer",
                                             colorCode:orderModel.colorCode
                                         };
@@ -150,6 +152,8 @@ function placeOrder(call, callback){
                                                     timestamp: new Date(),
                                                     messageid:1,
                                                     message:"Your Order has been Placed",
+                                                    messagetype:"info",
+
                                                     userid:userid,
                                                     firstName:userResult.firstname,
                                                     lastName:userResult.lastname,
@@ -184,8 +188,8 @@ function placeOrder(call, callback){
                                                             firstName:userResult.firstname,
                                                             lastName:userResult.lastname,
                                                             profilePicUrl:userResult.profileUrl,
-                                                            OrderType:ordersave.orders[0].orderType,
-                                                            OrderEnd:ordersave.orders[0].endtime,
+                                                            orderType:ordersave.orders[0].orderType,
+                                                            orderEnd:ordersave.orders[0].endtime,
                                                             senderUserType:"customer",
                                                             colorCode:ordersave.orders[0].colorCode
                                                         };

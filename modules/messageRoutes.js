@@ -80,39 +80,45 @@ function createMessage(call,callback){
     }
 }
 
-function getAllMessages(call,callback){
+async function getAllMessages(call,callback){
     const  {userid} =  call.request;
     try{
-        roomSchema.find({"orders.userlist.id":userid},async(err,roomResults)=>{
+        await roomSchema.find({"orders.userlist.id":userid},async(err,roomResults)=>{
             if(err) throw err;
-            for(let i = 0;i<roomResults.length;i++){
-                roomResult = roomResults[i];
-                for(let j = 0;j<roomResult.orders.length;j++){
-                    let cas = false;
-                    for(let k = 0;k<roomResult.orders[j].userlist.length;k++){
-                        if(roomResult.orders[j].userlist[k].id==userid){
-                            cas = true;
+            if(roomResults.length!=0){
+                for(let i = 0;i<roomResults.length;i++){
+                    roomResult = roomResults[i];
+                    for(let j = 0;j<roomResult.orders.length;j++){
+                        let cas = false;
+                        for(let k = 0;k<roomResult.orders[j].userlist.length;k++){
+                            if(roomResult.orders[j].userlist[k].id==userid){
+                                cas = true;
+                                break;
+                            }
                         }
-                    }
-                    if(cas){
-                        for(let k = 0;k<roomResult.orders[j].messages.length;k++){
-                            let msg = JSON.parse(JSON.stringify(roomResult.orders[j].messages[k]));
-                            msg.roomId = roomResult.roomId;
-                            msg.orderid = roomResult.orders[j].orderid;
-                            msg.orderType = roomResult.orders[j].orderType;
-                            msg.orderEnd = roomResult.orders[j].endtime;
-                            msg.colorCode = roomResult.orders[j].colorCode;
-                            await call.write(msg);
+                        console.log(cas);
+                        if(cas){
+                            for(let k = 0;k<roomResult.orders[j].messages.length;k++){
+                                let msg = JSON.parse(JSON.stringify(roomResult.orders[j].messages[k]));
+                                msg.roomId = roomResult.roomId;
+                                msg.orderid = roomResult.orders[j].orderid;
+                                msg.orderType = roomResult.orders[j].orderType;
+                                msg.orderEnd = roomResult.orders[j].endtime;
+                                msg.colorCode = roomResult.orders[j].colorCode;
+                                console.log(msg);
+                                await call.write(msg);
+                            }
                         }
                     }
                 }
             }
             // return callback(null,{ message : "some error in backend", "response_code" : 405 });
         });
+        console.log("came to end");
         return call.end();
     }
     catch(err){
-        call.end();
+        return call.end();
     }
 }
 
@@ -139,18 +145,23 @@ function getAllMessages(call,callback){
 //     }
 // }
 
-function getRecentMessageUpdate(call,callback){
+async function getRecentMessageUpdate(call,callback){
     const  { userid, updates } =  call.request;
     try{
         for(let i = 0;i<updates.length;i++){
-            roomSchema.findOne({roomId:updates[i].roomId},async(err,roomResult)=>{
+            await roomSchema.findOne({roomId:updates[i].roomId},async(err,roomResult)=>{
                 if(err) throw err;
                 if(roomResult){
+                    console.log(roomResult);
                     for(let j=0;j<roomResult.orders.length;j++){
                         let cas = false;
                         for(let k = 0;k<roomResult.orders[j].userlist.length;k++){
-                            if(roomResult.orders[j].userlist[k]==userid) cas = true;
+                            if(roomResult.orders[j].userlist[k].id==userid){
+                                cas = true;
+                                break;
+                            }
                         }
+                        console.log(cas);
                         if(cas){
                             for(let k = 0;k<roomResult.orders[j].messages.length;k++){
                                 if(roomResult.orders[j].messages[k].messageid>updates[i].lastMessageId){
@@ -160,15 +171,15 @@ function getRecentMessageUpdate(call,callback){
                                     msg.orderType = roomResult.orders[j].orderType;
                                     msg.orderEnd = roomResult.orders[j].endtime;
                                     msg.colorCode = roomResult.orders[j].colorCode;
+                                    console.log(msg);
                                     await call.write(msg);
                                 }
                             }
                         }
                     }
                 }
-                    // var r = jsonQuery("orders.messages", {data: result}).value;
-                });
-            }
+            });
+        }
         return call.end();
     }
     catch(err){

@@ -14,16 +14,24 @@ const grpc = require('grpc');
 function getDutyEmployees(call, callback){
     const {storeid, Duty} = call.request;
     let temp = {storeid:storeid};
-    tt = "permissions."+Duty;
+    if(Duty=="Pickup"){
+        tt = "userType.packingHelper";
+    }
+    else{
+        tt = "userType.delivery";
+    }
+    
     temp[tt] = true;
+    console.log(temp);
     try{
-        employeeSchema.find(temp,"employeeid firstName lastName onDuty taskAssigned",async(err,employeesResult)=>{
+        employeeSchema.find(temp,"employeeid firstName lastName onduty taskAssigned",async(err,employeesResult)=>{
             if(err) throw err;
+            console.log(employeesResult);
             if(employeesResult.length!=0){
                 return callback(null,{"employees":employeesResult});
             }
             else{
-                return callback({code: grpc.status.NOT_FOUND,details: 'Not found'});
+                return callback(null,{"employees":[]});
             }
         });
     }
@@ -44,12 +52,12 @@ function assignEmployeeTask(call, callback){
                         employeeResult.taskAssigned=employeeResult.taskAssigned+1;
                         employeeResult.save();
                         var r = await jsonQuery("orders[orderid="+orderid+"]", {data: roomResult}).value;
-                        r.userlist.append({
+                        r.userlist.push({
                             id:employeeResult.employeeid,
                             firebaseuserid:employeeResult.firebaseuserid
                         });
                         let msg = {
-                            messageid:roomResult.lastMessageId,
+                            messageid:roomResult.lastMessageId+1,
                             userid:employeeResult.employeeid,
                             messagetype:"assign",
                             timestamp:new Date(),
@@ -58,6 +66,7 @@ function assignEmployeeTask(call, callback){
                             profilePicUrl:employeeResult.profileUrl,
                             senderUserType:job
                         };
+                        roomResult.lastMessageId = roomResult.lastMessageId+1;
                         if(job=="Packing"){
                             msg["orderstatuscode"]=203;
                             msg["message"]="Packing has been Assigned";
@@ -66,11 +75,14 @@ function assignEmployeeTask(call, callback){
                             msg["orderstatuscode"]=207;
                             msg["message"]="Delivery has been Assigned";
                         }
-                        r.messages.append(msg);
+                        r.messages.push(msg);
+                        console.log(r.userlist);
                         for(let i = 0;i<r.userlist.length;i++){
-                            sendFcm(r.userlist[i].firebaseuserid,"updated",(err,result)=>{
-                                if(err) throw err;
-                            });
+                            if(r.userlist[i].firebaseuserid!=null){
+                                sendFcm(r.userlist[i].firebaseuserid,"updated",(err,result)=>{
+                                    if(err) throw err;
+                                });
+                            }
                         }
                         return callback(null,{message:"success",response_code:200});
                     }
@@ -91,6 +103,8 @@ function assignEmployeeTask(call, callback){
 }
 
 function sendFcm(token,box,callback){
+    console.log(token);
+    console.log(box);
     var registrationToken = token;
     var message = {
       data : {
