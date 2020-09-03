@@ -1,11 +1,6 @@
 const mongoose = require('mongoose');
 const roomSchema = mongoose.Schema({
-    roomId:{
-        type: String,
-        unique: true,
-        index: true,
-        required: true
-    },
+    roomId:String,
     userid:String,
     storeid:String,
     orders:[{
@@ -29,15 +24,22 @@ const roomSchema = mongoose.Schema({
         timestamp:Date,
         products: [{
             productid:String,
+            quantityId : String,
             productName : String,
             quantityName : String,
-            quantityId : String,
-            orderQuantity : Number,
             dsPrice : Number,
             mrpPrice : Number,
+            status : {
+                type:String,
+                default:""
+            },
+            orderQuantity : Number,
+            issueQuantity: {
+                type:Number,
+                default:0
+            },
             outOfStock:false,
             total_quantity : Number,
-            issueQuantity: Number,
             total_price: Number
         }],
         itemSubtotal : Number,
@@ -61,7 +63,7 @@ const roomSchema = mongoose.Schema({
             orderstatuscode:Number,
             message:String,
             messagetype:String,
-            timestamp:String,
+            timestamp:Date,
             firstName:String,
             lastName:String,
             profilePicUrl:String,

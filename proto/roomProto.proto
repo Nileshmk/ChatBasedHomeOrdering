@@ -4,7 +4,7 @@ package roomPackage;
 
 service roomProto {
   rpc placeOrder(requestPlaceOrder) returns (UpdateMessage);
-  rpc createMessage(requestCreateMessage) returns (Message);
+  rpc createMessage(requestCreateMessage) returns (UpdateMessage);
   rpc getAllMessages(requestReceiveMessage) returns (stream UpdateMessage);
   rpc getRecentMessageUpdate(requestReceiveAtStartup) returns (stream UpdateMessage);
   rpc getDutyEmployees(requestGetDutyEmployees) returns (Employees);
@@ -14,8 +14,41 @@ service roomProto {
   rpc afterPackingByShopper(OrdersList) returns (Response);
   rpc getPackedProductstoCustomer(requestOrderInfo) returns (OrdersList);
   rpc afterReviewByCustomer(OrdersList) returns (Response);
+
+  // static data
+  rpc getOptionVersion(requestGetOptionVersion) returns (Options);
 }
 
+message Options{
+  int32 optionsVersion=1;
+  string storetype=2;
+  repeated string userRoles=3;
+  repeated Access access=4;
+}
+
+message Access{
+  string userRole =1;
+  repeated BelowOptions belowOptions=2;
+}
+
+message BelowOptions{
+  int32 status_code=1;
+  string optionName=2;
+  string emojiUnicode=3;
+  string optionBorderColor=4;
+  ToSend toSend=5;
+}
+
+message ToSend{
+  string message=1;
+  string messagetype=2;
+  int32 newStatusCode=3;
+}
+
+message requestGetOptionVersion{
+  int32 optionsVersion=1;
+  string storetype=2;
+}
 message requestOrderInfo{
   string storeid = 1;
   string orderid = 2;
@@ -28,18 +61,17 @@ message OrdersList{
 
 message OrderListProduct{
   string productid = 1;
-  string orderid = 2;
-  string quantityId = 3;
-  string productName = 4;
-  string quantityName = 5;
-  int32 dsPrice = 6;
-  int32 mrpPrice = 7;
-  string status = 8;
-  int32 orderQuantity = 9;
-  int32 issueQuantity = 10;  
-  bool outOfStock = 11;
-  int32 total_quantity = 12;
-  int32 total_price = 13;
+  string quantityId = 2;
+  string productName = 3;
+  string quantityName = 4;
+  int32 dsPrice = 5;
+  int32 mrpPrice = 6;
+  string status = 7;
+  int32 orderQuantity = 8;
+  int32 issueQuantity = 9;  
+  bool outOfStock = 10;
+  int32 total_quantity = 11;
+  int32 total_price = 12;
 }
 
 message voidNoParam{}
@@ -163,19 +195,24 @@ message Updates{
 message UpdateMessage{
   int32 messageid=1;
   string roomId=2;
-  string orderid=3;
-  string userid=4;
-  int32 orderstatuscode=5;
-  string message=6;
-  string messagetype=7;
-  string timestamp=8;
-  string firstName=9;
-  string lastName=10;
-  string profilePicUrl=11;
-  string orderType=12;
-  string orderEnd=13;
-  string senderUserType=14;
-  string colorCode=15;
+  int32 optionsVersion=3;  
+  string storeid=4; 
+  string storeName=5; 
+  string storetype=6; 
+  string storeLogoUrl=7;
+  string orderid=8;
+  string userid=9;
+  int32 orderstatuscode=10;
+  string message=11;
+  string messagetype=12;
+  string timestamp=13;
+  string firstName=14;
+  string lastName=15;
+  string profilePicUrl=16;
+  string orderType=17;
+  string orderEnd=18;
+  string senderUserType=19;
+  string colorCode=20;
 }
 
 message requestGetDutyEmployees{

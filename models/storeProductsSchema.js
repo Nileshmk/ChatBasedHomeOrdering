@@ -6,6 +6,8 @@ const storeProductSchema = mongoose.Schema({
     storeName: String,
     storeAddress: String,
     storeCategory: String,
+    optionsVersion: Number,
+    storeLogoUrl : String,
     mincharges:{
       type:Number,
       default:null

@@ -1,0 +1,108 @@
+[
+    {
+        "_id": "5f50dc1484c3e04f5dbc2d5b",
+        "roomId": "5f50dc1484c3e04f5dbc2d59",
+        "storeid": "5ef1a64cc729500c79aa2db8",
+        "userid": "5f476e7a462e2500342e15d0",
+        "orders": [
+            {
+                "userAddress": {
+                    "byGoogle": {
+                        "loc": {
+                            "coordinates": [
+                                "17.6807335",
+                                "75.9109385"
+                            ],
+                            "type": "Point"
+                        },
+                        "address": "218, Udgiri Wada, Mangalwar Peth, Solapur, Maharashtra 413002, India",
+                        "city": "Solapur",
+                        "state": "Maharashtra",
+                        "country": "India",
+                        "postalcode": "413002"
+                    },
+                    "byUser": {
+                        "addressTag": "Home",
+                        "userAddress": "102",
+                        "Landmark": "Tuljapur"
+                    }
+                },
+                "products": [
+                    {
+                        "status": "",
+                        "issueQuantity": 0,
+                        "_id": "5f50dc1484c3e04f5dbc2d5d",
+                        "productid": "pid",
+                        "productName": "Abc",
+                        "dsPrice": 455,
+                        "mrpPrice": 344
+                    },
+                    {
+                        "status": "",
+                        "issueQuantity": 0,
+                        "_id": "5f50dc1484c3e04f5dbc2d5e",
+                        "productid": "pid",
+                        "productName": "AIk",
+                        "dsPrice": 121,
+                        "mrpPrice": 1
+                    }
+                ],
+                "userlist": [
+                    {
+                        "_id": "5f50dc1484c3e04f5dbc2d5f",
+                        "id": "5f476e7a462e2500342e15d0",
+                        "firebaseuserid": null
+                    },
+                    {
+                        "_id": "5f50dc1484c3e04f5dbc2d60",
+                        "id": "5f0825a4c1474a00343e7baf",
+                        "firebaseuserid": "e3tHA4euRG-i1XnCNu4NzD:APA91bE_vNEtE179dU2aUH1eVrEHq2HM9Dy7jtl6TVPpH5ocSnwKqQyrV8FMJbG6e-vGvu-5TLZGKp7_YRJwW1orKDhxvGtEU-xPKERU6ShUU82AsH9jJvdfNlJQS2a9U8Y4mD_TS_2D"
+                    }
+                ],
+                "messages": [
+                    {
+                        "_id": "5f50dc1484c3e04f5dbc2d61",
+                        "timestamp": "2020-09-03T12:05:40.673Z",
+                        "messageid": 1,
+                        "message": "Your Order has been Placed",
+                        "messagetype": "info",
+                        "userid": "5f476e7a462e2500342e15d0",
+                        "firstName": "vpace",
+                        "lastName": "demo",
+                        "orderstatuscode": 201,
+                        "profilePicUrl": "null",
+                        "senderUserType": "customer"
+                    },
+                    {
+                        "_id": "5f50dd0284c3e04f5dbc2d6a",
+                        "messageid": 2,
+                        "userid": "5f476e7a462e2500342e15d0",
+                        "orderstatuscode": 300,
+                        "message": "Hello",
+                        "messagetype": "Hello",
+                        "timestamp": "2020-09-03T12:09:38.694Z",
+                        "firstName": "Hello",
+                        "lastName": "Hello",
+                        "profilePicUrl": "Hello",
+                        "senderUserType": "Hello"
+                    }
+                ],
+                "_id": "5f50dc1484c3e04f5dbc2d5c",
+                "orderid": "5f50dc1484c3e04f5dbc2d5a",
+                "usercontact": "Hello",
+                "timestamp": "2020-09-03T12:05:40.673Z",
+                "GST": "21",
+                "delCharges": 4234,
+                "serviceCharges": "746",
+                "TotalAmount": 535,
+                "allocationid": "5f4dcb8ec33e93003450f5e8",
+                "orderType": "Pickup",
+                "starttime": "1:40 AM",
+                "endtime": "1:40 AM",
+                "colorCode": "0x2e1a5333"
+            }
+        ],
+        "lastMessageId": 2,
+        "__v": 1
+    }
+]
