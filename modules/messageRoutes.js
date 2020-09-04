@@ -112,34 +112,25 @@ function createMessage(call,callback){
     }
 }
 
-function getAllMessages(call,callback){
+async function getAllMessages(call,callback){
     const  {userid} =  call.request;
-    try{
-        roomSchema.find({"orders.userlist.id":userid},async(err,roomResults)=>{
-            if(err) throw err;
-            if(roomResults.length!=0){
-                for(let i = 0;i<roomResults.length;i++){
-                    roomResult = roomResults[i];
-                    await storeProductsSchema.findOne({storeid:roomResult.storeid},async(err,storeResult)=>{
-                        if(err) throw err;
-                        if(storeResult){
-                            for(let j = 0;j<roomResult.orders.length;j++){
-                                let cas = false;
-                                for(let k = 0;k<roomResult.orders[j].userlist.length;k++){
-                                    if(roomResult.orders[j].userlist[k].id==userid){
-                                        cas = true;
-                                        break;
-                                    }
-                                }
-                                console.log(cas);
-                                if(cas){
-                                    for(let k = 0;k<roomResult.orders[j].messages.length;k++){
-                                        let msg = JSON.parse(JSON.stringify(roomResult.orders[j].messages[k]));
+    await roomSchema.find({"orders.userlist.id":userid},(err,roomResults)=>{
+        if(err) throw err;
+        if(roomResults.length!=0){
+            _.each(roomResults,(roomResult)=>{
+                await storeProductsSchema.findOne({storeid:roomResult.storeid},(err,storeResult)=>{
+                    if(err) throw err;
+                    if(storeResult){
+                        await _.each(roomResult.orders,async (order)=>{
+                            await _.each(order.userlist,async (user)=>{
+                                if(user.id==userid){
+                                    await _.each(order.messages,async (message)=>{
+                                        let msg = await JSON.parse(JSON.stringify(message));
                                         msg.roomId = roomResult.roomId;
-                                        msg.orderid = roomResult.orders[j].orderid;
-                                        msg.orderType = roomResult.orders[j].orderType;
-                                        msg.orderEnd = roomResult.orders[j].endtime;
-                                        msg.colorCode = roomResult.orders[j].colorCode;
+                                        msg.orderid = order.orderid;
+                                        msg.orderType = order.orderType;
+                                        msg.orderEnd = order.endtime;
+                                        msg.colorCode = order.colorCode;
                                         msg.optionsVersion=storeResult.optionsVersion;  
                                         msg.storeid=storeResult.storeid;
                                         msg.storeName=storeResult.storeName;
@@ -147,28 +138,18 @@ function getAllMessages(call,callback){
                                         msg.storeLogoUrl=storeResult.storeLogoUrl;
                                         console.log(msg);
                                         await call.write(msg);
-                                    }
+                                    })
                                 }
-                            }
-                        }   
-                        else{
-                            return call.end();
-                        } 
-                    })
-                    if(i==(roomResults.length-1)){
-                        console.log("came to end");
-                        return call.end();
-                    }   
-                }
-            }
-            else{
-                return call.end();
-            }
-        });
-    }
-    catch(err){
-        return call.end();
-    }
+                            });   
+                        });
+                    } 
+                })   
+            });
+        }
+    }).catch(()=>{
+        call.end();
+    });
+    call.end();
 }
 
 async function getRecentMessageUpdate(call,callback){

@@ -184,14 +184,15 @@ const storeProductsSchema = require("../models/storeProductsSchema");
 //   result.timeslots[0].perSlotBookingNumber = 30;
 //   result.save();
 // })
-// roomSchema.find({},(err,result)=>{
-// //   if(err) throw err;
-//   console.log(result);
-//   	fs.writeFile('myjsonfile.json', JSON.stringify(result), 'utf8',(err,result)=>{
-// 		console.log(result);
-// 	});
-// 	// fs.close();
-// });
+
+roomSchema.find({},(err,result)=>{
+//   if(err) throw err;
+  console.log(result);
+  	fs.writeFile('myjsonfile.json', JSON.stringify(result), 'utf8',(err,result)=>{
+		console.log(result);
+	});
+	// fs.close();
+});
 
 // let model = new optionSchema(t);
 // model.save();
@@ -215,10 +216,6 @@ const storeProductsSchema = require("../models/storeProductsSchema");
 
 // updates = [ { roomId: '5f50eefe5a13385557da52fc', lastMessageId: 0 } ];
 
-updates= [1,2,3];
-_.each(updates,function (update) {
-	console.log(update);
-});
 
 // userSchema.find({},(err,result)=>{
 //     // var r = jsonQuery("timeslots[timeslotid="+"5f2593f37f505c0034b60c18"+"]", {data: result}).value;
