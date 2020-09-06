@@ -54,7 +54,8 @@ const roomSchema = mongoose.Schema({
         userlist:[
             {
                 id:String,
-                firebaseuserid:String
+                firebaseuserid:String,
+                userType:String
             }
         ],
         messages:[{
@@ -66,8 +67,7 @@ const roomSchema = mongoose.Schema({
             timestamp:Date,
             firstName:String,
             lastName:String,
-            profilePicUrl:String,
-            senderUserType:String
+            profilePicUrl:String
         }],
         colorCode:String
     }],
@@ -75,3 +75,4 @@ const roomSchema = mongoose.Schema({
 });
 
 module.exports = mongoose.model('rooms', roomSchema);
+

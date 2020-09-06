@@ -32,11 +32,12 @@ message Access{
 }
 
 message BelowOptions{
-  int32 status_code=1;
+  int32 statusCode=1;
   string optionName=2;
-  string emojiUnicode=3;
-  string optionBorderColor=4;
-  ToSend toSend=5;
+  string messagetype=3;
+  string emojiUnicode=4;
+  string optionBorderColor=5;
+  ToSend toSend=6;
 }
 
 message ToSend{
@@ -57,6 +58,11 @@ message requestOrderInfo{
 message OrdersList{
   string orderid = 1;
   repeated OrderListProduct products= 2;
+  int32 itemSubtotal = 3;
+  string GST = 4;
+  int32 delCharges = 5;
+  string serviceCharges = 6;
+  int32 TotalAmount = 7;
 }
 
 message OrderListProduct{
@@ -89,7 +95,7 @@ message Order{
   UserAddress userAddress=3;
   string timestamp=4;
   repeated Product products = 5;
-  int32 iteamSubtotal = 6;
+  int32 itemSubtotal = 6;
   string GST = 7;
   int32 delCharges = 8;
   string serviceCharges = 9;
@@ -113,8 +119,8 @@ message Message{
   string firstName=7;
   string lastName=8;
   string profilePicUrl=9;
-  string senderUserType=10;
 }
+
 
 message Product{
     string productid = 1;
@@ -132,6 +138,7 @@ message Product{
 message Userlist{
     string id = 1;
     string firebaseuserid = 2;
+    string userType = 3;
 }
 
 message UserAddress{
@@ -168,14 +175,13 @@ message requestPlaceOrder{
   string storeid = 1;
   string userid = 2;
   string timeslotid = 3;
-  Order order = 5;
+  Order order = 4;
 }
 
 message requestCreateMessage{
   string roomId = 1;
   string orderid = 2;
-  string userid = 3;
-  Message msg = 4;
+  Message msg = 3;
 }
 
 message requestReceiveMessage{
@@ -211,8 +217,8 @@ message UpdateMessage{
   string profilePicUrl=16;
   string orderType=17;
   string orderEnd=18;
-  string senderUserType=19;
-  string colorCode=20;
+  string colorCode=19;
+  repeated Userlist userlist=20; 
 }
 
 message requestGetDutyEmployees{

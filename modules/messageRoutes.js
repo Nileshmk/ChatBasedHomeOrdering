@@ -14,7 +14,7 @@ const _ = require('lodash');
 
 function createMessage(call,callback){
     // roomid, orderid, userid, msg
-    const  { roomId, orderid, userid, msg } =  call.request;
+    const  { roomId, orderid, msg } =  call.request;
     try{
         roomSchema.findOne({roomId:roomId},(err,roomResult)=>{
             console.log(roomResult);
@@ -23,7 +23,7 @@ function createMessage(call,callback){
                 var r = jsonQuery("orders[orderid="+orderid+"]", {data: roomResult}).value;
                 if(r!=null){
                     for(let i = 0;i<r.userlist.length;i++){
-                        if(r.userlist[i].id==userid){
+                        if(r.userlist[i].id==msg.userid){
                             timestamptemp = new Date();
                             var temp = {
                                 messageid: roomResult.lastMessageId+1,
@@ -34,8 +34,7 @@ function createMessage(call,callback){
                                 timestamp: timestamptemp,
                                 firstName:msg.firstName,
                                 lastName:msg.lastName,
-                                profilePicUrl:msg.profilePicUrl,
-                                senderUserType:msg.senderUserType
+                                profilePicUrl:msg.profilePicUrl
                             };
                             // console.log(r.messages);
                             r.messages.push(temp);
@@ -65,13 +64,13 @@ function createMessage(call,callback){
                                         orderstatuscode:msg.orderstatuscode,
                                         message:msg.message,
                                         messagetype:msg.messagetype,
-                                        timestamp: timestamptemp,
+                                        timestamp: timestamptemp.toISOString(),
                                         firstName:msg.firstName,
                                         lastName:msg.lastName,
-                                        profilePicUrl:msg.profileUrl,
+                                        profilePicUrl:msg.profilePicUrl,
                                         orderType:r.orderType,
                                         orderEnd:r.endtime,
-                                        senderUserType:msg.senderUserType,
+                                        userlist:r.userlist,
                                         colorCode:r.colorCode
                                     }
                                     return callback(null,temp1);
@@ -113,90 +112,122 @@ function createMessage(call,callback){
 }
 
 async function getAllMessages(call,callback){
-    const  {userid} =  call.request;
-    await roomSchema.find({"orders.userlist.id":userid},(err,roomResults)=>{
-        if(err) throw err;
+        console.log("hello");
+        const  {userid} =  call.request;
+        const roomResults = await roomSchema.find({"orders.userlist.id":userid});
         if(roomResults.length!=0){
-            _.each(roomResults,(roomResult)=>{
-                await storeProductsSchema.findOne({storeid:roomResult.storeid},(err,storeResult)=>{
-                    if(err) throw err;
+            for(let i = 0;i<roomResults.length;i++){
+                // const numFruits = roomResults.map(roomResult => {
+                    const storeResult = await storeProductsSchema.findOne({storeid:roomResults[i].storeid});
+                    // console.log(result);
                     if(storeResult){
-                        await _.each(roomResult.orders,async (order)=>{
-                            await _.each(order.userlist,async (user)=>{
-                                if(user.id==userid){
-                                    await _.each(order.messages,async (message)=>{
-                                        let msg = await JSON.parse(JSON.stringify(message));
-                                        msg.roomId = roomResult.roomId;
-                                        msg.orderid = order.orderid;
-                                        msg.orderType = order.orderType;
-                                        msg.orderEnd = order.endtime;
-                                        msg.colorCode = order.colorCode;
-                                        msg.optionsVersion=storeResult.optionsVersion;  
-                                        msg.storeid=storeResult.storeid;
-                                        msg.storeName=storeResult.storeName;
-                                        msg.storetype=storeResult.storeCategory;
-                                        msg.storeLogoUrl=storeResult.storeLogoUrl;
-                                        console.log(msg);
-                                        await call.write(msg);
-                                    })
+                        for(let j = 0;j<roomResults[i].orders.length;j++){
+                            let cas = false;
+                            for(let k = 0;k<roomResults[i].orders[j].userlist.length;k++){
+                                if(roomResults[i].orders[j].userlist[k].id==userid) cas = true;
+                                // console.log(roomResults[i].orders[j].messages[k]);
+                            }
+                            if(cas){
+                                for(let k = 0;k<roomResults[i].orders[j].messages.length;k++){
+                                    let msg =  JSON.parse(JSON.stringify(roomResults[i].orders[j].messages[k]));
+                                    msg.roomId = roomResults[i].roomId;
+                                    msg.orderid = roomResults[i].orders[j].orderid;
+                                    msg.orderType = roomResults[i].orders[j].orderType;
+                                    msg.orderEnd = roomResults[i].orders[j].endtime;
+                                    msg.colorCode = roomResults[i].orders[j].colorCode;
+                                    msg.optionsVersion=storeResult.optionsVersion;  
+                                    msg.storeid=storeResult.storeid;
+                                    msg.storeName=storeResult.storeName;
+                                    msg.storetype=storeResult.storeCategory;
+                                    msg.storeLogoUrl=storeResult.storeLogoUrl;
+                                    msg.userlist = roomResults[i].orders[j].userlist;
+                                    call.write(msg);
                                 }
-                            });   
-                        });
-                    } 
-                })   
-            });
+                            }
+                        }
+                    }
+                // 	return numFruit
+                //   })
+                //   console.log(numFruits);
+                // async function kada(){
+                // }
+                // await kada();
+            }
+            // _.each(roomResults,async (roomResult)=>{
+            // 	await storeProductsSchema.findOne({storeid:roomResult.storeid},(err,storeResult)=>{
+            // 		if(err) throw err;
+            // 		if(storeResult){
+            // 			_.each(roomResult.orders,(order)=>{
+            // 				_.each(order.userlist,(user)=>{
+            // 					if(user.id==userid){
+            // 						_.each(order.messages, async(message)=>{
+            // 							let msg =  await JSON.parse(JSON.stringify(message));
+            // 							msg.roomId = roomResult.roomId;
+            // 							msg.orderid = order.orderid;
+            // 							msg.orderType = order.orderType;
+            // 							msg.orderEnd = order.endtime;
+            // 							msg.colorCode = order.colorCode;
+            // 							msg.optionsVersion=storeResult.optionsVersion;  
+            // 							msg.storeid=storeResult.storeid;
+            // 							msg.storeName=storeResult.storeName;
+            // 							msg.storetype=storeResult.storeCategory;
+            // 							msg.storeLogoUrl=storeResult.storeLogoUrl;
+            // 							await console.log(msg);
+            // 							// console.lo(msg);
+            // 						})
+            // 					}
+            // 				});   
+            // 			});
+            // 		} 
+            // 	})   
+            // });
         }
-    }).catch(()=>{
+        console.log("end");
         call.end();
-    });
-    call.end();
 }
 
 async function getRecentMessageUpdate(call,callback){
+    console.log("hello");
     const  { userid, updates } =  call.request;
-    try{
-        _.each(updates, async function (update) {
-            console.log(update);
-            await roomSchema.findOne({roomId:update.roomId},async (err,roomResult)=>{
-                if(err) throw err; 
-                if(roomResult){
-                    await storeProductsSchema.findOne({storeid:roomResult.storeid},async (err,storeResult)=>{
-                        if(err) throw err;
-                        if(storeResult){
-                            _.each(roomResult.orders, function (order) {
-                                _.each(order.userlist, function (user) {
-                                    if(user.id==userid){
-                                        console.log("done");
-                                        _.each(order.messages, function (message) {
-                                            if(message.messageid>update.lastMessageId){
-                                                let msg = JSON.parse(JSON.stringify(message));
-                                                msg.roomId = roomResult.roomId;
-                                                msg.orderid = order.orderid;
-                                                msg.orderType = order.orderType;
-                                                msg.orderEnd = order.endtime;
-                                                msg.colorCode = order.colorCode;
-                                                msg.optionsVersion=storeResult.optionsVersion;  
-                                                msg.storeid=storeResult.storeid;
-                                                msg.storeName=storeResult.storeName;
-                                                msg.storetype=storeResult.storeCategory;
-                                                msg.storeLogoUrl=storeResult.storeLogoUrl;
-                                                console.log(msg);
-                                                call.write(msg);
-                                            }
-                                        })
-                                    }
-                                });
-                            });
+    if(updates.length!=0){
+        for(let i = 0;i<updates.length;i++){
+            const roomResult = await roomSchema.findOne({roomId:updates[i].roomId});
+            const storeResult = await storeProductsSchema.findOne({storeid:roomResult.storeid});
+            if(storeResult){
+                for(let j = 0;j<roomResult.orders.length;j++){
+                    let cas = false;
+                    for(let k = 0;k<roomResult.orders[j].userlist.length;k++){
+                        if(roomResult.orders[j].userlist[k].id==userid) cas = true;
+                        // console.log(roomResult.orders[j].messages[k]);
+                    }
+                    console.log(cas);
+                    if(cas){
+                        for(let k = 0;k<roomResult.orders[j].messages.length;k++){
+                            console.log(roomResult.orders[j].messages[k].messageid);
+                            if(roomResult.orders[j].messages[k].messageid>updates[i].lastMessageId){
+                                let msg =  JSON.parse(JSON.stringify(roomResult.orders[j].messages[k]));
+                                msg.roomId = roomResult.roomId;
+                                msg.orderid = roomResult.orders[j].orderid;
+                                msg.orderType = roomResult.orders[j].orderType;
+                                msg.orderEnd = roomResult.orders[j].endtime;
+                                msg.colorCode = roomResult.orders[j].colorCode;
+                                msg.userlist = roomResults[i].orders[j].userlist;
+                                msg.optionsVersion=storeResult.optionsVersion;  
+                                msg.storeid=storeResult.storeid;
+                                msg.storeName=storeResult.storeName;
+                                msg.storetype=storeResult.storeCategory;
+                                msg.storeLogoUrl=storeResult.storeLogoUrl;
+                                console.log(msg);
+                                call.write(msg);
+                            }
                         }
-                    });
+                    }
                 }
-            });
-        });
-        call.end();
+            }
+        }
     }
-    catch(err){
-        call.end();
-    }
+    console.log("end");
+    call.end();
 }
 
 function sendFcm(token,box,callback){

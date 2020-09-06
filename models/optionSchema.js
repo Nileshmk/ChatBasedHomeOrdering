@@ -10,9 +10,10 @@ const optionSchema = mongoose.Schema(
             belowOptions:
                 [
                   {
-                    status_code:Number,
+                    statusCode:Number,
                     optionName:String,
                     emojiUnicode:String,
+                    messagetype:String,
                     optionBorderColor:String,
                     toSend:
                       {

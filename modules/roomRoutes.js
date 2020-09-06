@@ -37,7 +37,10 @@ function placeOrder(call, callback){
                             orderType: orderType,
                             starttime: starttime,
                             endtime:endtime,
-                            userlist:[roomResult.orders[0].userlist[0],roomResult.orders[0].userlist[1]],
+                            userlist:[
+                                roomResult.orders[0].userlist[0],
+                                roomResult.orders[0].userlist[1]
+                            ],
                             messages:[{
                                 timestamp: new Date(),
                                 messageid:roomResult.lastMessageId+1,
@@ -47,8 +50,7 @@ function placeOrder(call, callback){
                                 firstName:userResult.firstname,
                                 lastName:userResult.lastname,
                                 orderstatuscode:201,
-                                profilePicUrl:userResult.profileUrl,
-                                senderUserType:"customer"
+                                profilePicUrl:userResult.profileUrl
                             }],
                             colorCode: getColor()
                         };
@@ -88,7 +90,8 @@ function placeOrder(call, callback){
                                                     orderType:orderModel.orderType,
                                                     orderEnd:orderModel.endtime,
                                                     senderUserType:"customer",
-                                                    colorCode:orderModel.colorCode
+                                                    colorCode:orderModel.colorCode,
+                                                    userlist:orderModel.userlist
                                                 };
                                                 console.log(msg);
                                                 return callback(null,msg);   
@@ -144,23 +147,23 @@ function placeOrder(call, callback){
                                                 endtime:starttime,
                                                 userlist:[{
                                                     id:userResult._id,
-                                                    firebaseuserid:userResult.firebaseuserid
+                                                    firebaseuserid:userResult.firebaseuserid,
+                                                    userType:"Customer"
                                                 },{
-                                                    id:managerResult._id,
-                                                    firebaseuserid:managerResult.firebaseuserid
+                                                    id:managerResult.employeeid,
+                                                    firebaseuserid:managerResult.firebaseuserid,
+                                                    userType:"Manager"
                                                 }],
                                                 messages:[{
                                                     timestamp: new Date(),
                                                     messageid:1,
                                                     message:"Your Order has been Placed",
                                                     messagetype:"info",
-
                                                     userid:userid,
                                                     firstName:userResult.firstname,
                                                     lastName:userResult.lastname,
                                                     orderstatuscode:201,
-                                                    profilePicUrl:userResult.profileUrl,
-                                                    senderUserType:"customer"
+                                                    profilePicUrl:userResult.profileUrl
                                                 }],
                                                 colorCode:getColor()
                                             }],
@@ -199,7 +202,8 @@ function placeOrder(call, callback){
                                                             orderType:ordersave.orders[0].orderType,
                                                             orderEnd:ordersave.orders[0].endtime,
                                                             senderUserType:"customer",
-                                                            colorCode:ordersave.orders[0].colorCode
+                                                            colorCode:ordersave.orders[0].colorCode,
+                                                            userlist:ordersave.orders[0].userlist
                                                         };
                                                         return callback(null,msg);    
                                                     });

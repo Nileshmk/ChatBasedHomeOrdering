@@ -11,7 +11,7 @@ const ObjectId = require("mongodb").ObjectID;
 const jsonQuery = require("json-query");
 const grpc = require('grpc');
 
-function getOrderedProductstoShopper(call, callback){
+function getOrder(call, callback){
     const {storeid, orderid} = call.request;
     try{
         roomSchema.findOne({storeid:storeid,"orders.orderid":orderid},"",async(err,roomResult)=>{
@@ -20,7 +20,12 @@ function getOrderedProductstoShopper(call, callback){
                 var r = await jsonQuery("orders[orderid="+orderid+"]", {data: roomResult}).value;
                 msg = {
                     "orderid": orderid,
-                    "products": r.products
+                    "products": r.products,
+                    "itemSubtotal":r.itemSubtotal,
+                    "GST":r.GST,
+                    "delCharges":r.delCharges,
+                    "serviceCharges":r.serviceCharges,
+                    "TotalAmount":r.TotalAmount
                 }
                 return callback(null,msg);
             }
@@ -34,13 +39,15 @@ function getOrderedProductstoShopper(call, callback){
     }
 }
 
-function afterPackingByShopper(call, callback){
+function updateOrder(call, callback){
     const {orderid, products} = call.request;
     try{
         roomSchema.findOne({storeid:storeid,"orders.orderid":orderid},async(err,roomResult)=>{
             if(err) throw err;
             if(roomResult){
-                
+                var r = await jsonQuery("orders[orderid="+orderid+"]", {data: roomResult}).value;
+                r.products = products;
+                roomResult.save()
             }
             else{
                 return callback({code: grpc.status.NOT_FOUND,details: 'Not found'});
