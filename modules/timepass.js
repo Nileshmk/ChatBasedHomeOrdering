@@ -164,12 +164,26 @@ mongoose.connect(keys.mongodb.dbOrg, () => {
     console.log("connected to mongodb..");
   },{ useFindAndModify: false });
 
-
-optionSchema.deleteMany({},(err,result)=>{
-console.log("deleted");
-let model = new optionSchema(t);
-model.save();
-});
+t = {
+	taskAssigned:{
+		Manage:0,
+		Packing:0,
+		Delivery:0
+	}
+};
+// k = "Packing";
+// console.log(t.taskAssigned[k]);
+employeeSchema.find({},(err,result)=>{
+	for(let i = 0;i<result.length;i++){
+		result[i].taskAssigned = t.taskAssigned;
+		result[i].save();
+	}
+})
+// optionSchema.deleteMany({},(err,result)=>{
+// console.log("deleted");
+// let model = new optionSchema(t);
+// model.save();
+// });
 
 // optionSchema.find({},(err,result)=>{
 // 	console.log(result);
@@ -194,14 +208,16 @@ model.save();
 //   result.save();
 // })
 
-roomSchema.find({},(err,result)=>{
-//   if(err) throw err;
-  console.log(result);
-  	fs.writeFile('myjsonfile.json', JSON.stringify(result), 'utf8',(err,result)=>{
-		console.log(result);
-	});
-	// fs.close();
-});
+// roomSchema.find({},(err,result)=>{
+// //   if(err) throw err;
+//   console.log(result);
+//   	fs.writeFile('myjsonfile.json', JSON.stringify(result), 'utf8',(err,result)=>{
+// 		console.log(result);
+// 	});
+// 	// fs.close();
+// });
+
+
 
 
 

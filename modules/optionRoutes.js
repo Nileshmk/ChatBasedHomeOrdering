@@ -32,6 +32,9 @@ function getOptionVersion(call, callback){
 }
 
 function sendFcm(token,box,callback){
+    if(token==null){
+    return callback(error,null);
+  }
     console.log(token);
     console.log(box);
     var registrationToken = token;

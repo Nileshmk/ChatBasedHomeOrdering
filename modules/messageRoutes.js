@@ -12,96 +12,80 @@ var jsonQuery = require('json-query');
 const storeProductsSchema = require('../models/storeProductsSchema');
 const _ = require('lodash');
 
-function createMessage(call,callback){
+async function createMessage(call,callback){
     // roomid, orderid, userid, msg
     const  { roomId, orderid, msg } =  call.request;
     try{
-        roomSchema.findOne({roomId:roomId},(err,roomResult)=>{
-            console.log(roomResult);
-            if(err) throw err;
-            if(roomResult){
-                var r = jsonQuery("orders[orderid="+orderid+"]", {data: roomResult}).value;
-                if(r!=null){
-                    for(let i = 0;i<r.userlist.length;i++){
-                        if(r.userlist[i].id==msg.userid){
-                            timestamptemp = new Date();
-                            var temp = {
-                                messageid: roomResult.lastMessageId+1,
-                                userid:msg.userid,
-                                orderstatuscode:msg.orderstatuscode,
-                                message: msg.message,
-                                messagetype:msg.messagetype,
-                                timestamp: timestamptemp,
-                                firstName:msg.firstName,
-                                lastName:msg.lastName,
-                                profilePicUrl:msg.profilePicUrl
-                            };
-                            // console.log(r.messages);
-                            r.messages.push(temp);
-                            // console.log(r.messages);
-                            roomResult.lastMessageId = roomResult.lastMessageId+1;
-                            var roomModel = roomResult.save();
-                            for(let j = 0;j<r.userlist.length;j++){
-                                if(j!=i){
-                                    sendFcm(r.userlist[j].firebaseuserid,"updated",(err,result)=>{
-                                        if(err) throw err;
-                                    });
-                                }
-                            }
-                            storeProductsSchema.findOne({storeid:roomResult.storeid},async(err,storeResult)=>{
-                                if(err) throw err;
-                                if(storeResult){
-                                    var temp1 = {
-                                        messageid:roomResult.lastMessageId,
-                                        roomId:roomResult.roomId,
-                                        optionsVersion:storeResult.optionsVersion,  
-                                        storeid:storeResult.storeid, 
-                                        storeName:storeResult.storeName,
-                                        storetype:storeResult.storeCategory,
-                                        storeLogoUrl:storeResult.storeLogoUrl,
-                                        orderid:orderid,
-                                        userid:msg.userid,
-                                        orderstatuscode:msg.orderstatuscode,
-                                        message:msg.message,
-                                        messagetype:msg.messagetype,
-                                        timestamp: timestamptemp.toISOString(),
-                                        firstName:msg.firstName,
-                                        lastName:msg.lastName,
-                                        profilePicUrl:msg.profilePicUrl,
-                                        orderType:r.orderType,
-                                        orderEnd:r.endtime,
-                                        userlist:r.userlist,
-                                        colorCode:r.colorCode
-                                    }
-                                    return callback(null,temp1);
-                                }
-                                else{
-                                    return callback({
-                                        code: grpc.status.NOT_FOUND,
-                                        details: 'store not found'
-                                    });                
-                                }
-                            });
-                        }
+        roomResult = await roomSchema.findOne({roomId:roomId});
+        storeResult = await storeProductsSchema.findOne({storeid:roomResult.storeid});
+        if(roomResult && storeResult){
+            var r = await jsonQuery("orders[orderid="+orderid+"]", {data: roomResult}).value;
+            var rr =  await jsonQuery("userlist[id="+msg.userid+"]", {data: r}).value;
+            if(rr!=null){
+                timestamptemp = new Date();
+                var temp = {
+                    messageid: roomResult.lastMessageId+1,
+                    userid:msg.userid,
+                    orderstatuscode:msg.orderstatuscode,
+                    message: msg.message,
+                    messagetype:msg.messagetype,
+                    timestamp: timestamptemp,
+                    firstName:msg.firstName,
+                    lastName:msg.lastName,
+                    profilePicUrl:msg.profilePicUrl
+                };
+                r.messages.push(temp);
+                roomResult.lastMessageId = roomResult.lastMessageId+1;
+                await roomResult.save();
+                var temp1 = {
+                    messageid:roomResult.lastMessageId,
+                    roomId:roomResult.roomId,
+                    optionsVersion:storeResult.optionsVersion,  
+                    storeid:storeResult.storeid, 
+                    storeName:storeResult.storeName,
+                    storetype:storeResult.storeCategory,
+                    storeLogoUrl:storeResult.storeLogoUrl,
+                    orderid:orderid,
+                    userid:msg.userid,
+                    orderstatuscode:msg.orderstatuscode,
+                    message:msg.message,
+                    messagetype:msg.messagetype,
+                    timestamp: timestamptemp.toISOString(),
+                    firstName:msg.firstName,
+                    lastName:msg.lastName,
+                    profilePicUrl:msg.profilePicUrl,
+                    orderType:r.orderType,
+                    orderEnd:r.endtime,
+                    userlist:r.userlist,
+                    colorCode:r.colorCode
+                }
+                await callback(null,temp1);
+                for(let j = 0;j<r.userlist.length;j++){
+                    if(j!=i){
+                        await sendFcm(r.userlist[j].firebaseuserid,"updated",(err,result)=>{
+                            // if(err) throw err;
+                        });
                     }
-                    // return callback(null,{ message : "some error in backend", "response_code" : 405 });
                 }
-                else{
-                    return callback({
-                        code: grpc.status.NOT_FOUND,
-                        details: 'order not found'
-                    });
-                }
+                return; 
                 // return callback(null,{ message : "some error in backend", "response_code" : 405 });
             }
             else{
                 return callback({
                     code: grpc.status.NOT_FOUND,
-                    details: 'room not found'
+                    details: 'order not found'
                 });
-                // return callback(null,{ message : "some error in backend", "response_code" : 405 });
             }
-        });
+            // return callback(null,{ message : "some error in backend", "response_code" : 405 });
+        }
+        else{
+            return callback({
+                code: grpc.status.NOT_FOUND,
+                details: 'room not found'
+            });
+            // return callback(null,{ message : "some error in backend", "response_code" : 405 });
+        }
+        
     }
     catch(err){
         return callback({
@@ -211,7 +195,7 @@ async function getRecentMessageUpdate(call,callback){
                                 msg.orderType = roomResult.orders[j].orderType;
                                 msg.orderEnd = roomResult.orders[j].endtime;
                                 msg.colorCode = roomResult.orders[j].colorCode;
-                                msg.userlist = roomResults[i].orders[j].userlist;
+                                msg.userlist = roomResult.orders[j].userlist;
                                 msg.optionsVersion=storeResult.optionsVersion;  
                                 msg.storeid=storeResult.storeid;
                                 msg.storeName=storeResult.storeName;
@@ -231,6 +215,9 @@ async function getRecentMessageUpdate(call,callback){
 }
 
 function sendFcm(token,box,callback){
+    if(token==null){
+    return callback(error,null);
+  }
     var registrationToken = token;
     var message = {
       data : {

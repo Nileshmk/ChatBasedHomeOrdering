@@ -43,9 +43,9 @@ const roomSchema = mongoose.Schema({
             total_price: Number
         }],
         itemSubtotal : Number,
-        GST: String,
+        GST: Number,
         delCharges: Number,
-        serviceCharges: String,
+        serviceCharges: Number,
         TotalAmount: Number,
         allocationid: String,
         orderType: String,

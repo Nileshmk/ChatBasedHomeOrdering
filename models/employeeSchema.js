@@ -39,8 +39,15 @@ const employeeSchema = mongoose.Schema({
         default: null
     },
     taskAssigned:{
-        type:Number,
-        default: 0
+        Manage:
+        {type:Number,
+        default: 0},
+        Packing:
+        {type:Number,
+        default: 0},
+        Delivery:
+        {type:Number,
+        default: 0},
     }
 });
 

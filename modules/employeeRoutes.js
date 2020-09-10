@@ -49,41 +49,22 @@ function assignEmployeeTask(call, callback){
                 await employeeSchema.findOne({storeid:storeid,employeeid:employeeid},async(err,employeeResult)=>{
                     if(err) throw err;
                     if(employeeResult){
-                        employeeResult.taskAssigned=employeeResult.taskAssigned+1;
+                        employeeResult.taskAssigned[job]=employeeResult.taskAssigned[job]+1;
                         employeeResult.save();
                         var r = await jsonQuery("orders[orderid="+orderid+"]", {data: roomResult}).value;
                         r.userlist.push({
                             id:employeeResult.employeeid,
-                            firebaseuserid:employeeResult.firebaseuserid
+                            firebaseuserid:employeeResult.firebaseuserid,
+                            userType:job
                         });
-                        let msg = {
-                            messageid:roomResult.lastMessageId+1,
-                            userid:employeeResult.employeeid,
-                            messagetype:"assign",
-                            timestamp:new Date(),
-                            firstName:employeeResult.firstName,
-                            lastName:employeeResult.lastName,
-                            profilePicUrl:employeeResult.profileUrl,
-                            senderUserType:job
-                        };
-                        roomResult.lastMessageId = roomResult.lastMessageId+1;
-                        if(job=="Packing"){
-                            msg["orderstatuscode"]=203;
-                            msg["message"]="Packing has been Assigned";
-                        }
-                        else{
-                            msg["orderstatuscode"]=207;
-                            msg["message"]="Delivery has been Assigned";
-                        }
-                        r.messages.push(msg);
-                        console.log(r.userlist);
-                        for(let i = 0;i<r.userlist.length;i++){
-                            if(r.userlist[i].firebaseuserid!=null){
-                                sendFcm(r.userlist[i].firebaseuserid,"updated",(err,result)=>{
-                                    if(err) throw err;
-                                });
-                            }
-                        }
+                        // for(let i = 0;i<r.userlist.length;i++){
+                        //     if(r.userlist[i].firebaseuserid!=null){
+                        //         await sendFcm(r.userlist[i].firebaseuserid,"updated",(err,result)=>{
+                        //             // if(err) throw err;
+                        //         });
+                        //     }
+                        // }
+                        await roomResult.save();
                         return callback(null,{message:"success",response_code:200});
                     }
                     else{
@@ -103,6 +84,9 @@ function assignEmployeeTask(call, callback){
 }
 
 function sendFcm(token,box,callback){
+    if(token==null){
+    return callback(error,null);
+  }
     console.log(token);
     console.log(box);
     var registrationToken = token;

@@ -68,34 +68,43 @@ function placeOrder(call, callback){
                                     await storeProductsSchema.findOne({storeid:storeid},async(err,storeResult)=>{
                                         if(err) throw err;
                                         if(storeResult){
-                                            sendFcm(roomResult.orders[0].userlist[1].firebaseuserid,"updated",(err,result)=>{
-                                                if(err) throw err;
-                                                let msg={
-                                                    messageid:roomResult.lastMessageId,
-                                                    roomId:roomResult.roomId,
-                                                    optionsVersion:storeResult.optionsVersion,  
-                                                    storeid:storeResult.storeid, 
-                                                    storeName:storeResult.storeName,
-                                                    storetype:storeResult.storeCategory,
-                                                    storeLogoUrl:storeResult.storeLogoUrl,
-                                                    orderid:orderModel.orderid,
-                                                    userid:userid,
-                                                    orderstatuscode:201,
-                                                    message:"Your Order has been Placed",
-                                                    messagetype:"info",
-                                                    timestamp: roomResult.orders[roomResult.orders.length-1].messages[0].timestamp.toISOString(),
-                                                    firstName:userResult.firstname,
-                                                    lastName:userResult.lastname,
-                                                    profilePicUrl:userResult.profileUrl,
-                                                    orderType:orderModel.orderType,
-                                                    orderEnd:orderModel.endtime,
-                                                    senderUserType:"customer",
-                                                    colorCode:orderModel.colorCode,
-                                                    userlist:orderModel.userlist
-                                                };
-                                                console.log(msg);
-                                                return callback(null,msg);   
+                                            await sendFcm(roomResult.orders[0].userlist[1].firebaseuserid,"updated",(err,result)=>{
                                             });   
+                                            let msg={
+                                                messageid:roomResult.lastMessageId,
+                                                roomId:roomResult.roomId,
+                                                optionsVersion:storeResult.optionsVersion,  
+                                                storeid:storeResult.storeid, 
+                                                storeName:storeResult.storeName,
+                                                storetype:storeResult.storeCategory,
+                                                storeLogoUrl:storeResult.storeLogoUrl,
+                                                orderid:orderModel.orderid,
+                                                userid:userid,
+                                                orderstatuscode:201,
+                                                message:"Your Order has been Placed",
+                                                messagetype:"info",
+                                                timestamp: roomResult.orders[roomResult.orders.length-1].messages[0].timestamp.toISOString(),
+                                                firstName:userResult.firstname,
+                                                lastName:userResult.lastname,
+                                                profilePicUrl:userResult.profileUrl,
+                                                orderType:orderModel.orderType,
+                                                orderEnd:orderModel.endtime,
+                                                senderUserType:"customer",
+                                                colorCode:orderModel.colorCode,
+                                                userlist:orderModel.userlist
+                                            };
+                                            console.log(msg);
+                                            await employeeSchema.findOne({storeid:storeid,"userType.manager":true},async(err,managerResult)=>{
+                                                if(err) throw err;
+                                                if(managerResult){
+                                                    managerResult.taskAssigned.Manage=managerResult.taskAssigned.Manage+1;
+                                                    await managerResult.save();
+                                                }
+                                                else{
+                                                    return callback({code: grpc.status.NOT_FOUND,details: 'store not found'});
+                                                }
+                                            });
+                                            return callback(null,msg);   
                                         }
                                         else{
                                         return callback({code: grpc.status.NOT_FOUND,details: 'store not found'});
@@ -144,7 +153,7 @@ function placeOrder(call, callback){
                                                 allocationid: allocationid,
                                                 orderType: orderType,
                                                 starttime: starttime,
-                                                endtime:starttime,
+                                                endtime:endtime,
                                                 userlist:[{
                                                     id:userResult._id,
                                                     firebaseuserid:userResult.firebaseuserid,
@@ -178,35 +187,37 @@ function placeOrder(call, callback){
                                                 if(r!=null && r.perSlotBookingNumber>0){
                                                     r.perSlotBookingNumber = r.perSlotBookingNumber-1;
                                                     await allocationResult.save();
-                                                    sendFcm(ordersave.orders[0].userlist[1].firebaseuserid,"updated",(err,result)=>{
-                                                        if(err) throw err;
-                                                        console.log(ordersave.orders[0].messages[0].timestamp);
-                                                        console.log(ordersave.orders[0].messages[0].timestamp.toISOString());
-                                                        let msg={
-                                                            messageid:1,
-                                                            roomId:temp,
-                                                            optionsVersion:storeResult.optionsVersion,  
-                                                            storeid:storeResult.storeid, 
-                                                            storeName:storeResult.storeName,
-                                                            storetype:storeResult.storeCategory,
-                                                            storeLogoUrl:storeResult.storeLogoUrl,
-                                                            orderid:ordersave.orders[0].orderid,
-                                                            userid:userid,
-                                                            orderstatuscode:201,
-                                                            message:"Your Order has been Placed",
-                                                            messagetype:"info",
-                                                            timestamp: ordersave.orders[0].messages[0].timestamp.toISOString(),
-                                                            firstName:userResult.firstname,
-                                                            lastName:userResult.lastname,
-                                                            profilePicUrl:userResult.profileUrl,
-                                                            orderType:ordersave.orders[0].orderType,
-                                                            orderEnd:ordersave.orders[0].endtime,
-                                                            senderUserType:"customer",
-                                                            colorCode:ordersave.orders[0].colorCode,
-                                                            userlist:ordersave.orders[0].userlist
-                                                        };
-                                                        return callback(null,msg);    
+                                                    await sendFcm(ordersave.orders[0].userlist[1].firebaseuserid,"updated",(err,result)=>{
+                                                        // if(err) throw err;
                                                     });
+                                                    console.log(ordersave.orders[0].messages[0].timestamp);
+                                                    console.log(ordersave.orders[0].messages[0].timestamp.toISOString());
+                                                    let msg={
+                                                        messageid:1,
+                                                        roomId:temp,
+                                                        optionsVersion:storeResult.optionsVersion,  
+                                                        storeid:storeResult.storeid, 
+                                                        storeName:storeResult.storeName,
+                                                        storetype:storeResult.storeCategory,
+                                                        storeLogoUrl:storeResult.storeLogoUrl,
+                                                        orderid:ordersave.orders[0].orderid,
+                                                        userid:userid,
+                                                        orderstatuscode:201,
+                                                        message:"Your Order has been Placed",
+                                                        messagetype:"info",
+                                                        timestamp: ordersave.orders[0].messages[0].timestamp.toISOString(),
+                                                        firstName:userResult.firstname,
+                                                        lastName:userResult.lastname,
+                                                        profilePicUrl:userResult.profileUrl,
+                                                        orderType:ordersave.orders[0].orderType,
+                                                        orderEnd:ordersave.orders[0].endtime,
+                                                        senderUserType:"customer",
+                                                        colorCode:ordersave.orders[0].colorCode,
+                                                        userlist:ordersave.orders[0].userlist
+                                                    };
+                                                    managerResult.taskAssigned.Manage=managerResult.taskAssigned.Manage+1;
+                                                    await managerResult.save();
+                                                    return callback(null,msg);    
                                                     // return callback(null,{message :"success","response_code":200});   
                                                 }
                                                 else{
@@ -257,6 +268,9 @@ function getColor(){
 }
 
 function sendFcm(token,box,callback){
+    if(token==null){
+    return callback(error,null);
+  }
     var registrationToken = token;
     var message = {
       data : {

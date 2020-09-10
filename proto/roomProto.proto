@@ -10,10 +10,8 @@ service roomProto {
   rpc getDutyEmployees(requestGetDutyEmployees) returns (Employees);
   rpc assignEmployeeTask(requestAssignEmployeeTask) returns (Response);
   // second phase
-  rpc getOrderedProductstoShopper(requestOrderInfo) returns (OrdersList);
-  rpc afterPackingByShopper(OrdersList) returns (Response);
-  rpc getPackedProductstoCustomer(requestOrderInfo) returns (OrdersList);
-  rpc afterReviewByCustomer(OrdersList) returns (Response);
+  rpc getOrder(requestOrderInfo) returns (OrdersList);
+  rpc updateOrder(OrdersList) returns (Response);
 
   // static data
   rpc getOptionVersion(requestGetOptionVersion) returns (Options);
@@ -59,9 +57,9 @@ message OrdersList{
   string orderid = 1;
   repeated OrderListProduct products= 2;
   int32 itemSubtotal = 3;
-  string GST = 4;
+  int64 GST = 4;
   int32 delCharges = 5;
-  string serviceCharges = 6;
+  int64 serviceCharges = 6;
   int32 TotalAmount = 7;
 }
 
@@ -96,9 +94,9 @@ message Order{
   string timestamp=4;
   repeated Product products = 5;
   int32 itemSubtotal = 6;
-  string GST = 7;
-  int32 delCharges = 8;
-  string serviceCharges = 9;
+  int64 GST = 7;
+  int64 delCharges = 8;
+  int64 serviceCharges = 9;
   int32 TotalAmount = 10;
   string allocationid = 11;
   string orderType = 12;
@@ -234,7 +232,13 @@ message Employee{
   string firstName=2;
   string lastName=3;
   bool onduty=4;
-  int32 taskAssigned=5;
+  TaskAssigned taskAssigned=5;
+}
+
+message TaskAssigned{
+  int32 Manage=1;
+  int32 Packing=2;
+  int32 Delivery=3;
 }
 
 message requestAssignEmployeeTask{

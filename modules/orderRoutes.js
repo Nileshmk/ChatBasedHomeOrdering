@@ -40,14 +40,21 @@ function getOrder(call, callback){
 }
 
 function updateOrder(call, callback){
-    const {orderid, products} = call.request;
+    const {orderid, products,itemSubtotal,GST,delCharges,serviceCharges,TotalAmount} = call.request;
+    console.log(orderid);
     try{
-        roomSchema.findOne({storeid:storeid,"orders.orderid":orderid},async(err,roomResult)=>{
+        roomSchema.findOne({"orders.orderid":orderid},async(err,roomResult)=>{
             if(err) throw err;
             if(roomResult){
                 var r = await jsonQuery("orders[orderid="+orderid+"]", {data: roomResult}).value;
                 r.products = products;
-                roomResult.save()
+                r.itemSubtotal = itemSubtotal;
+                r.GST = GST;
+                r.delCharges = delCharges;
+                r.serviceCharges = serviceCharges;
+                r.TotalAmount = TotalAmount;
+                roomResult.save();
+                return callback(null,{message:"success",response_code:200});
             }
             else{
                 return callback({code: grpc.status.NOT_FOUND,details: 'Not found'});
@@ -60,6 +67,9 @@ function updateOrder(call, callback){
 }
 
 function sendFcm(token,box,callback){
+    if(token==null){
+    return callback(error,null);
+  }
     console.log(token);
     console.log(box);
     var registrationToken = token;
@@ -80,4 +90,4 @@ function sendFcm(token,box,callback){
     });
 }
 
-module.exports = {getDutyEmployees,assignEmployeeTask};
+module.exports = {getOrder,updateOrder};
