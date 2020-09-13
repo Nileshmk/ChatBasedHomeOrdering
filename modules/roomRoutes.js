@@ -9,6 +9,7 @@ const orderSchema = require("../models/orderSchema");
 const ObjectId = require("mongodb").ObjectID;
 const storeProductsSchema = require("../models/storeProductsSchema");
 const jsonQuery = require("json-query");
+var randomColor = require('randomcolor'); 
 const grpc = require('grpc');
 
 function placeOrder(call, callback){
@@ -52,7 +53,7 @@ function placeOrder(call, callback){
                                 orderstatuscode:201,
                                 profilePicUrl:userResult.profileUrl
                             }],
-                            colorCode: getColor()
+                            colorCode: (randomColor()+"ff").replace("#","0x")
                         };
                         roomResult.lastMessageId = roomResult.lastMessageId+1;
                         roomResult.orders.push(orderModel);
@@ -174,7 +175,7 @@ function placeOrder(call, callback){
                                                     orderstatuscode:201,
                                                     profilePicUrl:userResult.profileUrl
                                                 }],
-                                                colorCode:getColor()
+                                                colorCode:(randomColor()+"ff").replace("#","0x")
                                             }],
                                             lastMessageId:1
                                         });

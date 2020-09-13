@@ -201,6 +201,7 @@ async function getRecentMessageUpdate(call,callback){
                                 msg.storeName=storeResult.storeName;
                                 msg.storetype=storeResult.storeCategory;
                                 msg.storeLogoUrl=storeResult.storeLogoUrl;
+                                msg.unread=false;
                                 console.log(msg);
                                 call.write(msg);
                             }

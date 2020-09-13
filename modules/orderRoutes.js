@@ -40,7 +40,7 @@ function getOrder(call, callback){
 }
 
 function updateOrder(call, callback){
-    const {orderid, products,itemSubtotal,GST,delCharges,serviceCharges,TotalAmount} = call.request;
+    const {orderid, products,itemSubtotal,GST,delCharges,serviceCharges,TotalAmount,msg} = call.request;
     console.log(orderid);
     try{
         roomSchema.findOne({"orders.orderid":orderid},async(err,roomResult)=>{
@@ -53,8 +53,63 @@ function updateOrder(call, callback){
                 r.delCharges = delCharges;
                 r.serviceCharges = serviceCharges;
                 r.TotalAmount = TotalAmount;
-                roomResult.save();
-                return callback(null,{message:"success",response_code:200});
+                var rr =  await jsonQuery("userlist[id="+msg.userid+"]", {data: r}).value;
+                storeResult = await storeProductsSchema.findOne({storeid:roomResult.storeid});
+                if(rr!=null){
+                    timestamptemp = new Date();
+                    var temp = {
+                        messageid: roomResult.lastMessageId+1,
+                        userid:msg.userid,
+                        orderstatuscode:msg.orderstatuscode,
+                        message: msg.message,
+                        messagetype:msg.messagetype,
+                        timestamp: timestamptemp,
+                        firstName:msg.firstName,
+                        lastName:msg.lastName,
+                        profilePicUrl:msg.profilePicUrl
+                    };
+                    r.messages.push(temp);
+                    roomResult.lastMessageId = roomResult.lastMessageId+1;
+                    await roomResult.save();
+                    var temp1 = {
+                        messageid:roomResult.lastMessageId,
+                        roomId:roomResult.roomId,
+                        optionsVersion:storeResult.optionsVersion,  
+                        storeid:storeResult.storeid, 
+                        storeName:storeResult.storeName,
+                        storetype:storeResult.storeCategory,
+                        storeLogoUrl:storeResult.storeLogoUrl,
+                        orderid:orderid,
+                        userid:msg.userid,
+                        orderstatuscode:msg.orderstatuscode,
+                        message:msg.message,
+                        messagetype:msg.messagetype,
+                        timestamp: timestamptemp.toISOString(),
+                        firstName:msg.firstName,
+                        lastName:msg.lastName,
+                        profilePicUrl:msg.profilePicUrl,
+                        orderType:r.orderType,
+                        orderEnd:r.endtime,
+                        userlist:r.userlist,
+                        colorCode:r.colorCode
+                    }
+                    await callback(null,temp1);
+                    for(let j = 0;j<r.userlist.length;j++){
+                        if(j!=i){
+                            await sendFcm(r.userlist[j].firebaseuserid,"updated",(err,result)=>{
+                                // if(err) throw err;
+                            });
+                        }
+                    }
+                    return; 
+                    // return callback(null,{ message : "some error in backend", "response_code" : 405 });
+                }
+                else{
+                    return callback({
+                        code: grpc.status.NOT_FOUND,
+                        details: 'order not found'
+                    });
+                }
             }
             else{
                 return callback({code: grpc.status.NOT_FOUND,details: 'Not found'});

@@ -6,12 +6,12 @@ service roomProto {
   rpc placeOrder(requestPlaceOrder) returns (UpdateMessage);
   rpc createMessage(requestCreateMessage) returns (UpdateMessage);
   rpc getAllMessages(requestReceiveMessage) returns (stream UpdateMessage);
-  rpc getRecentMessageUpdate(requestReceiveAtStartup) returns (stream UpdateMessage);
+  rpc getRecentMessageUpdate(requestReceiveAtStartup) returns (stream UpdateMessageLatest);
   rpc getDutyEmployees(requestGetDutyEmployees) returns (Employees);
-  rpc assignEmployeeTask(requestAssignEmployeeTask) returns (Response);
+  rpc assignEmployeeTask(requestAssignEmployeeTask) returns (UpdateMessage);
   // second phase
   rpc getOrder(requestOrderInfo) returns (OrdersList);
-  rpc updateOrder(OrdersList) returns (Response);
+  rpc updateOrder(requestUpdateOrder) returns (UpdateMessage);
 
   // static data
   rpc getOptionVersion(requestGetOptionVersion) returns (Options);
@@ -61,6 +61,17 @@ message OrdersList{
   int32 delCharges = 5;
   int64 serviceCharges = 6;
   int32 TotalAmount = 7;
+}
+
+message requestUpdateOrder{
+  string orderid = 1;
+  repeated OrderListProduct products= 2;
+  int32 itemSubtotal = 3;
+  int64 GST = 4;
+  int32 delCharges = 5;
+  int64 serviceCharges = 6;
+  int32 TotalAmount = 7;
+  Message msg = 8; 
 }
 
 message OrderListProduct{
@@ -219,6 +230,30 @@ message UpdateMessage{
   repeated Userlist userlist=20; 
 }
 
+message UpdateMessageLatest{
+  int32 messageid=1;
+  string roomId=2;
+  int32 optionsVersion=3;  
+  string storeid=4; 
+  string storeName=5; 
+  string storetype=6; 
+  string storeLogoUrl=7;
+  string orderid=8;
+  string userid=9;
+  int32 orderstatuscode=10;
+  string message=11;
+  string messagetype=12;
+  string timestamp=13;
+  string firstName=14;
+  string lastName=15;
+  string profilePicUrl=16;
+  string orderType=17;
+  string orderEnd=18;
+  string colorCode=19;
+  repeated Userlist userlist=20; 
+  bool unread = 21;
+}
+
 message requestGetDutyEmployees{
   string storeid = 1;
   string Duty = 2;
@@ -246,4 +281,5 @@ message requestAssignEmployeeTask{
   string orderid=2;
   string storeid=3;
   string job=4;
+  Message msg = 5;
 }

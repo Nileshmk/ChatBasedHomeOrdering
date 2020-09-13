@@ -41,7 +41,7 @@ function getDutyEmployees(call, callback){
 }
 
 function assignEmployeeTask(call, callback){
-    const {employeeid,orderid,storeid,job} = call.request;
+    const {employeeid,orderid,storeid,job,msg} = call.request;
     try{
         roomSchema.findOne({storeid:storeid,"orders.orderid":orderid},async(err,roomResult)=>{
             if(err) throw err;
@@ -64,8 +64,65 @@ function assignEmployeeTask(call, callback){
                         //         });
                         //     }
                         // }
-                        await roomResult.save();
-                        return callback(null,{message:"success",response_code:200});
+                        storeResult = await storeProductsSchema.findOne({storeid:roomResult.storeid});
+                        var rr =  await jsonQuery("userlist[id="+msg.userid+"]", {data: r}).value;
+                        if(rr!=null){
+                            timestamptemp = new Date();
+                            var temp = {
+                                messageid: roomResult.lastMessageId+1,
+                                userid:msg.userid,
+                                orderstatuscode:msg.orderstatuscode,
+                                message: msg.message,
+                                messagetype:msg.messagetype,
+                                timestamp: timestamptemp,
+                                firstName:msg.firstName,
+                                lastName:msg.lastName,
+                                profilePicUrl:msg.profilePicUrl
+                            };
+                            r.messages.push(temp);
+                            roomResult.lastMessageId = roomResult.lastMessageId+1;
+                            await roomResult.save();
+                            var temp1 = {
+                                messageid:roomResult.lastMessageId,
+                                roomId:roomResult.roomId,
+                                optionsVersion:storeResult.optionsVersion,  
+                                storeid:storeResult.storeid, 
+                                storeName:storeResult.storeName,
+                                storetype:storeResult.storeCategory,
+                                storeLogoUrl:storeResult.storeLogoUrl,
+                                orderid:orderid,
+                                userid:msg.userid,
+                                orderstatuscode:msg.orderstatuscode,
+                                message:msg.message,
+                                messagetype:msg.messagetype,
+                                timestamp: timestamptemp.toISOString(),
+                                firstName:msg.firstName,
+                                lastName:msg.lastName,
+                                profilePicUrl:msg.profilePicUrl,
+                                orderType:r.orderType,
+                                orderEnd:r.endtime,
+                                userlist:r.userlist,
+                                colorCode:r.colorCode
+                            }
+                            await callback(null,temp1);
+                            for(let j = 0;j<r.userlist.length;j++){
+                                if(r.userlist.id!=msg.userid){
+                                    await sendFcm(r.userlist[j].firebaseuserid,"updated",(err,result)=>{
+                                        // if(err) throw err;
+                                    });
+                                }
+                            }
+                            return; 
+                            // return callback(null,{ message : "some error in backend", "response_code" : 405 });
+                        }
+                        else{
+                            return callback({
+                                code: grpc.status.NOT_FOUND,
+                                details: 'order not found'
+                            });
+                        }
+                        // await roomResult.save();
+                        // return callback(null,{message:"success",response_code:200});
                     }
                     else{
                         return callback({code: grpc.status.NOT_FOUND,details: 'Not found'});
