@@ -38,9 +38,9 @@ const roomSchema = mongoose.Schema({
                 type:Number,
                 default:0
             },
-            outOfStock:false,
-            total_quantity : Number,
-            total_price: Number
+            outOfStock:Boolean,
+            totalQuantity : Number,
+            totalPrice: Number
         }],
         itemSubtotal : Number,
         GST: Number,

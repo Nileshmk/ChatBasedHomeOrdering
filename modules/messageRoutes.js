@@ -36,6 +36,9 @@ async function createMessage(call,callback){
                 };
                 r.messages.push(temp);
                 roomResult.lastMessageId = roomResult.lastMessageId+1;
+                if(msg.orderstatuscode==206 || msg.orderstatuscode==209){
+                    r.userlist.pop();
+                }
                 await roomResult.save();
                 var temp1 = {
                     messageid:roomResult.lastMessageId,

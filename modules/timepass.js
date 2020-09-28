@@ -1,15 +1,167 @@
-var randomColor = require('randomcolor'); // import the script
-k = (randomColor()+"ff").replace("#","0x");
-console.log(k)
+// var randomColor = require('randomcolor'); // import the script
+// k = (randomColor()+"ff").replace("#","0x");
+// console.log(k)
 
-// var allocationSchema = require("../models/allocationSchema");
-// var roomSchema = require("../models/roomSchema");
-// var userSchema = require("../models/userSchema");
-// var storeProductSchema = require("../models/storeProductsSchema");
-// var employeeSchema = require("../models/employeeSchema");
-// var allocationSchema = require("../models/allocationSchema");
-// var optionSchema = require("../models/optionSchema");
-// const _ = require('lodash');
+var allocationSchema = require("../models/allocationSchema");
+var roomSchema = require("../models/roomSchema");
+var userSchema = require("../models/userSchema");
+var storeProductSchema = require("../models/storeProductsSchema");
+var employeeSchema = require("../models/employeeSchema");
+var allocationSchema = require("../models/allocationSchema");
+var optionSchema = require("../models/optionSchema");
+const _ = require('lodash');
+t = {
+  "optionsVersion":1,
+  "storetype":"GeneralAll",
+  "userRoles":["customer","manager","packing","delivery"],
+  "access": [
+    {
+		"userRole":"Customer",
+		"belowOptions":
+		[
+			{
+				"statusCode":204,
+				"messagetype":"VIEWORDER",
+				"optionName":"Review Order",
+					"messagetype":"VIEWORDER",
+				"emojiUnicode":"0x1F60A",					
+				"optionBorderColor":"#000000",
+				"toSend":
+				{
+					"message":"Order issue has been resolved..",
+					"newStatusCode":205,
+					"messagetype":"VIEWORDER"
+				}
+			},
+		]
+	},
+	{
+		"userRole":"Manager",
+		"belowOptions":
+		[
+			{
+				"statusCode":201,
+				"optionName":"Accept",
+				"messagetype":"INFO",
+				"emojiUnicode":"0x1F60A",					
+				"optionBorderColor":"#000000",
+				"toSend":
+				{
+					"message":"Your Order has been accepted.",
+					"newStatusCode":202,
+					"messagetype":"ASSIGN"
+				}
+			},
+			{
+				"statusCode":201,
+				"optionName":"Reject",
+				"messagetype":"INFO",
+				"emojiUnicode":"0x1F60A",
+				"optionBorderColor":"#000000",
+				"toSend":
+				{
+					"message":"Your Order has been rejected",
+					"newStatusCode":210,
+					"messagetype":"INFO"
+				}
+			},
+			{
+				"statusCode":202,
+				"optionName":"Assign Packing",
+				"messagetype":"ASSIGN",
+				"emojiUnicode":"0x1F60A",
+				"optionBorderColor":"#000000",
+				"toSend":
+				{
+					"message":"Packing Assigned to ",
+					"newStatusCode":203,
+					"messagetype":"VIEWORDER"
+				}
+			},
+			{
+				"statusCode":206,
+				"optionName":"Assign Delivery",
+				"messagetype":"ASSIGN",
+				"emojiUnicode":"0x1F60A",
+				"optionBorderColor":"#000000",
+				"toSend":
+				{
+					"message":"Delivery Assigned to ",
+					"newStatusCode":207,
+					"messagetype":"INFO"
+				}
+			},
+		]
+	},
+	{
+		"userRole":"Packing",
+		"belowOptions":
+		[
+			{
+				"statusCode":203,
+				"optionName":"Start Packing",
+				"messagetype":"VIEWORDER",
+				"emojiUnicode":"0x1F60A",					
+				"optionBorderColor":"#000000",
+				"toSend":
+				{
+					"message":"Packing Completed with Issues",
+					"newStatusCode":204,
+					"messagetype":"VIEWORDER"
+				}
+			},
+			{
+				"statusCode":205,
+				"optionName":"Continue Packing",
+				"messagetype":"VIEWORDER",
+				"emojiUnicode":"0x1F60A",
+				"optionBorderColor":"#000000",
+				"toSend":
+				{
+					"message":"Your Order has been packed without Issues..",
+					"newStatusCode":206,
+					"messagetype":"ASSIGN"
+				}
+			}
+		]
+	},
+	{
+		"userRole":"Delivery",
+		"belowOptions":
+		[
+			{
+				"statusCode":207,
+				"optionName":"Start Delivery",
+				"messagetype":"INFO",
+				"emojiUnicode":"0x1F60A",					
+				"optionBorderColor":"#000000",
+				"toSend":
+				{
+					"message":"Your Order is on its way",
+					"newStatusCode":208,
+					"messagetype":"INFO"
+				}
+			},
+			{
+				"statusCode":208,
+				"optionName":"Delivery Completed",
+				"messagetype":"INFO",
+				"emojiUnicode":"0x1F60A",
+				"optionBorderColor":"#000000",
+				"toSend":
+				{
+					"message":"Order delivery has been completed",
+					"newStatusCode":209,
+					"messagetype":"INFO"
+				}
+			}
+		]
+	},
+	]	
+}
+
+model = new optionSchema(t);
+model.save();
 // t = {
 //   "optionsVersion":1,
 //   "storetype":"GeneralAll",
@@ -159,14 +311,14 @@ console.log(k)
 // 	]	
 // }
 
-// var fs = require('fs');
-// const mongoose = require("mongoose");
-// const keys = require("../config/keys");
-// const jsonQuery = require("json-query");
-// const storeProductsSchema = require("../models/storeProductsSchema");
-// mongoose.connect(keys.mongodb.dbOrg, () => {
-//     console.log("connected to mongodb..");
-//   },{ useFindAndModify: false });
+var fs = require('fs');
+const mongoose = require("mongoose");
+const keys = require("../config/keys");
+const jsonQuery = require("json-query");
+const storeProductsSchema = require("../models/storeProductsSchema");
+mongoose.connect(keys.mongodb.dbOrg, () => {
+    console.log("connected to mongodb..");
+  },{ useFindAndModify: false });
 
 // t = {
 // 	taskAssigned:{

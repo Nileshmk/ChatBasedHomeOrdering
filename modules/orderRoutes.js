@@ -41,6 +41,7 @@ function getOrder(call, callback){
 
 function updateOrder(call, callback){
     const {orderid, products,itemSubtotal,GST,delCharges,serviceCharges,TotalAmount,msg} = call.request;
+    console.log(products);
     console.log(orderid);
     try{
         roomSchema.findOne({"orders.orderid":orderid},async(err,roomResult)=>{
@@ -95,7 +96,7 @@ function updateOrder(call, callback){
                     }
                     await callback(null,temp1);
                     for(let j = 0;j<r.userlist.length;j++){
-                        if(j!=i){
+                        if(r.userlist.id!=msg.userid){
                             await sendFcm(r.userlist[j].firebaseuserid,"updated",(err,result)=>{
                                 // if(err) throw err;
                             });
@@ -121,6 +122,26 @@ function updateOrder(call, callback){
     }
 }
 
+function getOrderSummary(call, callback){
+    const {storeid, orderid} = call.request;
+    try{
+        roomSchema.findOne({storeid:storeid,"orders.orderid":orderid},"",async(err,roomResult)=>{
+            if(err) throw err;
+            if(roomResult){
+                var r = await jsonQuery("orders[orderid="+orderid+"]", {data: roomResult}).value;
+                delete r["messages"];
+                console.log(r);
+                return callback(null,r);
+            }
+            else{
+                return callback({code: grpc.status.NOT_FOUND,details: 'Not found'});
+            }
+        });
+    }
+    catch(err){
+        return callback({code: grpc.status.NOT_FOUND,details: 'Not found'});
+    }
+}
 function sendFcm(token,box,callback){
     if(token==null){
     return callback(error,null);
@@ -145,4 +166,4 @@ function sendFcm(token,box,callback){
     });
 }
 
-module.exports = {getOrder,updateOrder};
+module.exports = {getOrder,updateOrder,getOrderSummary};

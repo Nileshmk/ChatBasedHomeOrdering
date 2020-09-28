@@ -12,7 +12,7 @@ service roomProto {
   // second phase
   rpc getOrder(requestOrderInfo) returns (OrdersList);
   rpc updateOrder(requestUpdateOrder) returns (UpdateMessage);
-
+  rpc getOrderSummary(requestOrderInfo) returns(OrderSummary);
   // static data
   rpc getOptionVersion(requestGetOptionVersion) returns (Options);
 }
@@ -85,8 +85,8 @@ message OrderListProduct{
   int32 orderQuantity = 8;
   int32 issueQuantity = 9;  
   bool outOfStock = 10;
-  int32 total_quantity = 11;
-  int32 total_price = 12;
+  int32 totalQuantity = 11;
+  int32 totalPrice = 12;
 }
 
 message voidNoParam{}
@@ -140,8 +140,8 @@ message Product{
     int32 dsPrice = 6;
     int32 mrpPrice = 7;
     bool outOfStock = 8;
-    int32 total_quantity = 9;
-    int32 total_price = 10;
+    int32 totalQuantity = 9;
+    int32 totalPrice = 10;
 }
 
 message Userlist{
@@ -282,4 +282,23 @@ message requestAssignEmployeeTask{
   string storeid=3;
   string job=4;
   Message msg = 5;
+}
+
+message OrderSummary{
+  string orderid=1;
+  string usercontact=2;
+  UserAddress userAddress=3;
+  string timestamp=4;
+  repeated OrderListProduct products = 5;
+  int32 itemSubtotal = 6;
+  int64 GST = 7;
+  int64 delCharges = 8;
+  int64 serviceCharges = 9;
+  int32 TotalAmount = 10;
+  string allocationid = 11;
+  string orderType = 12;
+  string starttime = 13;
+  string endtime = 14;
+  repeated Userlist userlist = 15;
+  string colorCode = 17;
 }

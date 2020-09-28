@@ -37,7 +37,7 @@ const { placeOrder } = require('./modules/roomRoutes');
 const { createMessage, getAllMessages,getRecentMessageUpdate} = require("./modules/messageRoutes");
 const {getDutyEmployees, assignEmployeeTask} = require("./modules/employeeRoutes");
 const { getOptionVersion } = require('./modules/optionRoutes');
-const { getOrder,updateOrder } = require('./modules/orderRoutes');
+const { getOrder,updateOrder,getOrderSummary } = require('./modules/orderRoutes');
 
 
 server.addService(roomPackage.roomProto.service,
@@ -50,7 +50,8 @@ server.addService(roomPackage.roomProto.service,
     "assignEmployeeTask":assignEmployeeTask,
     "getOptionVersion":getOptionVersion,
     "getOrder":getOrder,
-    "updateOrder":updateOrder
+    "updateOrder":updateOrder,
+    "getOrderSummary":getOrderSummary
 });
 
 server.start();

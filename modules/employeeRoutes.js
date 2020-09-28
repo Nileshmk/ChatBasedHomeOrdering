@@ -49,6 +49,10 @@ function assignEmployeeTask(call, callback){
                 await employeeSchema.findOne({storeid:storeid,employeeid:employeeid},async(err,employeeResult)=>{
                     if(err) throw err;
                     if(employeeResult){
+                        var check = await jsonQuery("userlist[userType="+job+"]", {data: r}).value;
+                        if(check!=null){
+                            return callback({code: grpc.status.NOT_FOUND,details: `${job} is already assigned`});
+                        }
                         employeeResult.taskAssigned[job]=employeeResult.taskAssigned[job]+1;
                         employeeResult.save();
                         var r = await jsonQuery("orders[orderid="+orderid+"]", {data: roomResult}).value;
@@ -128,7 +132,7 @@ function assignEmployeeTask(call, callback){
                         return callback({code: grpc.status.NOT_FOUND,details: 'Not found'});
                     }
                 });
-                await roomResult.save();
+                // await roomResult.save();
             }
             else{
                 return callback({code: grpc.status.NOT_FOUND,details: 'Not found'});
