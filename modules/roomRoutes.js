@@ -268,6 +268,24 @@ function getColor(){
     return color;
 }
 
+async function sendFcmToUser(userlist,userid,message){
+    temp = new Object();
+    for(let j = 0;j<userlist.length;j++){
+        if(userlist[j].id in temp){
+
+        }
+        else{
+            if(userlist[j].id!=userid){
+                await sendFcm(userlist[j].firebaseuserid,message,(err,result)=>{
+                    // if(err) throw err;
+                    console.log(`${err} ${result}`)
+                });
+            }
+            temp[userlist[j].id]=1;
+        }
+    }
+}
+
 function sendFcm(token,box,callback){
     if(token==null){
     return callback(error,null);

@@ -262,6 +262,7 @@ message requestGetDutyEmployees{
 message Employees{
   repeated Employee employees=1;
 }
+
 message Employee{
   string employeeid=1;
   string firstName=2;

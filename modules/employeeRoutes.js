@@ -144,6 +144,24 @@ function assignEmployeeTask(call, callback){
     }
 }
 
+function getEmployeeById(call, callback){
+    const {employeeid} = call.request;
+    try{
+        employeeSchema.findOne({employeeid:employeeid},async(err,employeesResult)=>{
+            if(err) throw err;
+            if(employeesResult){
+                return callback(null,employeesResult);
+            }
+            else{
+                return callback({code: grpc.status.NOT_FOUND,details: 'Not found'});
+            }
+        });
+    }
+    catch(err){
+        return callback({code: grpc.status.NOT_FOUND,details: 'Not found'});
+    }
+}
+
 function sendFcm(token,box,callback){
     if(token==null){
     return callback(error,null);
@@ -168,4 +186,4 @@ function sendFcm(token,box,callback){
     });
 }
 
-module.exports = {getDutyEmployees,assignEmployeeTask};
+module.exports = {getDutyEmployees,assignEmployeeTask, getEmployeeById};

@@ -95,13 +95,14 @@ function updateOrder(call, callback){
                         colorCode:r.colorCode
                     }
                     await callback(null,temp1);
-                    for(let j = 0;j<r.userlist.length;j++){
-                        if(r.userlist.id!=msg.userid){
-                            await sendFcm(r.userlist[j].firebaseuserid,"updated",(err,result)=>{
-                                // if(err) throw err;
-                            });
-                        }
-                    }
+                    // for(let j = 0;j<r.userlist.length;j++){
+                    //     if(r.userlist.id!=msg.userid){
+                    //         await sendFcm(r.userlist[j].firebaseuserid,"updated",(err,result)=>{
+                    //             // if(err) throw err;
+                    //         });
+                    //     }
+                    // }
+                    await sendFcmToUser(r.userlist,msg.userid,"updated");
                     return; 
                     // return callback(null,{ message : "some error in backend", "response_code" : 405 });
                 }
@@ -142,12 +143,29 @@ function getOrderSummary(call, callback){
         return callback({code: grpc.status.NOT_FOUND,details: 'Not found'});
     }
 }
+
+async function sendFcmToUser(userlist,userid,message){
+    temp = new Object();
+    for(let j = 0;j<userlist.length;j++){
+        if(userlist[j].id in temp){
+
+        }
+        else{
+            if(userlist[j].id!=userid){
+                await sendFcm(userlist[j].firebaseuserid,message,(err,result)=>{
+                    // if(err) throw err;
+                    console.log(`${err} ${result}`)
+                });
+            }
+            temp[userlist[j].id]=1;
+        }
+    }
+}
+
 function sendFcm(token,box,callback){
     if(token==null){
     return callback(error,null);
   }
-    console.log(token);
-    console.log(box);
     var registrationToken = token;
     var message = {
       data : {
@@ -165,5 +183,4 @@ function sendFcm(token,box,callback){
       // console.log('Error sending message:', error);
     });
 }
-
 module.exports = {getOrder,updateOrder,getOrderSummary};

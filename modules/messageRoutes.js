@@ -63,38 +63,37 @@ async function createMessage(call,callback){
                     colorCode:r.colorCode
                 }
                 await callback(null,temp1);
-                for(let j = 0;j<r.userlist.length;j++){
-                    if(j!=i){
-                        await sendFcm(r.userlist[j].firebaseuserid,"updated",(err,result)=>{
-                            // if(err) throw err;
-                        });
-                    }
-                }
+                console.log(r.userlist)
+                await sendFcmToUser(r.userlist,msg.userid,"updated");
                 return; 
                 // return callback(null,{ message : "some error in backend", "response_code" : 405 });
             }
             else{
                 return callback({
-                    code: grpc.status.NOT_FOUND,
-                    details: 'order not found'
-                });
+                code: 400,
+                message: "invalid input",
+                status: grpc.status.INTERNAL
+                })
             }
             // return callback(null,{ message : "some error in backend", "response_code" : 405 });
         }
         else{
             return callback({
-                code: grpc.status.NOT_FOUND,
-                details: 'room not found'
-            });
+            code: 400,
+            message: "invalid input",
+            status: grpc.status.INTERNAL
+            })
             // return callback(null,{ message : "some error in backend", "response_code" : 405 });
         }
         
     }
     catch(err){
+        console.log(err);
         return callback({
-            code: grpc.status.NOT_FOUND,
-            details: 'server error'
-        });
+            code: 400,
+            message: "invalid input",
+            status: grpc.status.INTERNAL
+            })
     }
 }
 
@@ -216,6 +215,24 @@ async function getRecentMessageUpdate(call,callback){
     }
     console.log("end");
     call.end();
+}
+
+async function sendFcmToUser(userlist,userid,message){
+    temp = new Object();
+    for(let j = 0;j<userlist.length;j++){
+        if(userlist[j].id in temp){
+
+        }
+        else{
+            if(userlist[j].id!=userid){
+                await sendFcm(userlist[j].firebaseuserid,message,(err,result)=>{
+                    // if(err) throw err;
+                    console.log(`${err} ${result}`)
+                });
+            }
+            temp[userlist[j].id]=1;
+        }
+    }
 }
 
 function sendFcm(token,box,callback){

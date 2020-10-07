@@ -1,0 +1,50 @@
+syntax = "proto3";
+
+package employeePackage;
+
+service employeeProto {
+  rpc getEmployeeById(requestGetEmployeeById) returns (EmployeeFullInfo);
+}
+
+message requestGetEmployeeById{
+    string employeeid=1;
+}
+
+message EmployeeFullInfo{
+  string storeid=1;
+  string employeeid=2;
+  string firstName=3;
+  string lastName=4;
+  string empUserName=5;
+  string phoneNo=6;
+  string profileUrl=7;
+  string email=8;
+  string loginType=9;
+  string firebaseuserid=10;
+  UserType userType=11;
+  Permission permissions=12;
+  bool onduty=13;
+  string storeName=14;
+  string storeAddress=15;
+  TaskAssigned taskAssigned=16;
+}
+
+message UserType{
+    bool admin = 1;
+    bool packingHelper = 2;
+    bool delivery = 3;
+    bool manager = 4;
+}
+
+message Permission{
+    bool revenue_view=1;
+    bool inventory_management=2;
+    bool timeslot_Pickup=3;
+    bool timeslot_Delivery=4;
+}
+
+message TaskAssigned{
+  int32 Manage=1;
+  int32 Packing=2;
+  int32 Delivery=3;
+}
