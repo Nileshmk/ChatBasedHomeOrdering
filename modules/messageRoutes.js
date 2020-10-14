@@ -178,34 +178,36 @@ async function getRecentMessageUpdate(call,callback){
     if(updates.length!=0){
         for(let i = 0;i<updates.length;i++){
             const roomResult = await roomSchema.findOne({roomId:updates[i].roomId});
-            const storeResult = await storeProductsSchema.findOne({storeid:roomResult.storeid});
-            if(storeResult){
-                for(let j = 0;j<roomResult.orders.length;j++){
-                    let cas = false;
-                    for(let k = 0;k<roomResult.orders[j].userlist.length;k++){
-                        if(roomResult.orders[j].userlist[k].id==userid) cas = true;
-                        // console.log(roomResult.orders[j].messages[k]);
-                    }
-                    console.log(cas);
-                    if(cas){
-                        for(let k = 0;k<roomResult.orders[j].messages.length;k++){
-                            console.log(roomResult.orders[j].messages[k].messageid);
-                            if(roomResult.orders[j].messages[k].messageid>updates[i].lastMessageId){
-                                let msg =  JSON.parse(JSON.stringify(roomResult.orders[j].messages[k]));
-                                msg.roomId = roomResult.roomId;
-                                msg.orderid = roomResult.orders[j].orderid;
-                                msg.orderType = roomResult.orders[j].orderType;
-                                msg.orderEnd = roomResult.orders[j].endtime;
-                                msg.colorCode = roomResult.orders[j].colorCode;
-                                msg.userlist = roomResult.orders[j].userlist;
-                                msg.optionsVersion=storeResult.optionsVersion;  
-                                msg.storeid=storeResult.storeid;
-                                msg.storeName=storeResult.storeName;
-                                msg.storetype=storeResult.storeCategory;
-                                msg.storeLogoUrl=storeResult.storeLogoUrl;
-                                msg.unread=false;
-                                console.log(msg);
-                                call.write(msg);
+            if(roomResult){
+                const storeResult = await storeProductsSchema.findOne({storeid:roomResult.storeid});
+                if(storeResult){
+                    for(let j = 0;j<roomResult.orders.length;j++){
+                        let cas = false;
+                        for(let k = 0;k<roomResult.orders[j].userlist.length;k++){
+                            if(roomResult.orders[j].userlist[k].id==userid) cas = true;
+                            // console.log(roomResult.orders[j].messages[k]);
+                        }
+                        console.log(cas);
+                        if(cas){
+                            for(let k = 0;k<roomResult.orders[j].messages.length;k++){
+                                console.log(roomResult.orders[j].messages[k].messageid);
+                                if(roomResult.orders[j].messages[k].messageid>updates[i].lastMessageId){
+                                    let msg =  JSON.parse(JSON.stringify(roomResult.orders[j].messages[k]));
+                                    msg.roomId = roomResult.roomId;
+                                    msg.orderid = roomResult.orders[j].orderid;
+                                    msg.orderType = roomResult.orders[j].orderType;
+                                    msg.orderEnd = roomResult.orders[j].endtime;
+                                    msg.colorCode = roomResult.orders[j].colorCode;
+                                    msg.userlist = roomResult.orders[j].userlist;
+                                    msg.optionsVersion=storeResult.optionsVersion;  
+                                    msg.storeid=storeResult.storeid;
+                                    msg.storeName=storeResult.storeName;
+                                    msg.storetype=storeResult.storeCategory;
+                                    msg.storeLogoUrl=storeResult.storeLogoUrl;
+                                    msg.unread=false;
+                                    console.log(msg);
+                                    call.write(msg);
+                                }
                             }
                         }
                     }

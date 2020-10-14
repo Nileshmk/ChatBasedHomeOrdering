@@ -63,13 +63,15 @@ function placeOrder(call, callback){
                                 console.log(allocationResult);
                                 var r = await jsonQuery("timeslots[timeslotid="+timeslotid+"]", {data: allocationResult}).value;
                                 console.log(r);
-                                if(r!=null && r.perSlotBookingNumber>0){
-                                    r.perSlotBookingNumber = r.perSlotBookingNumber-1;
+                                if(r!=null){
+                                    r.perSlotBookingNumber = r.perSlotBookingNumber+1;
                                     await allocationResult.save();
                                     await storeProductsSchema.findOne({storeid:storeid},async(err,storeResult)=>{
                                         if(err) throw err;
                                         if(storeResult){
                                             await sendFcm(roomResult.orders[0].userlist[1].firebaseuserid,"updated",(err,result)=>{
+                                                        console.log(`${err} ${result}`);
+                                                    console.log(ordersave.orders[0].userlist[1].firebaseuserid);
                                             });   
                                             let msg={
                                                 messageid:roomResult.lastMessageId,
@@ -185,11 +187,13 @@ function placeOrder(call, callback){
                                                 console.log(allocationResult);
                                                 var r = await jsonQuery("timeslots[timeslotid="+timeslotid+"]", {data: allocationResult}).value;
                                                 console.log(r);
-                                                if(r!=null && r.perSlotBookingNumber>0){
-                                                    r.perSlotBookingNumber = r.perSlotBookingNumber-1;
+                                                if(r!=null){
+                                                    r.perSlotBookingNumber = r.perSlotBookingNumber+1;
                                                     await allocationResult.save();
                                                     await sendFcm(ordersave.orders[0].userlist[1].firebaseuserid,"updated",(err,result)=>{
                                                         // if(err) throw err;
+                                                        console.log(ordersave.orders[0].userlist[1].firebaseuserid);
+                                                        console.log(`${err} ${result}`);
                                                     });
                                                     console.log(ordersave.orders[0].messages[0].timestamp);
                                                     console.log(ordersave.orders[0].messages[0].timestamp.toISOString());
