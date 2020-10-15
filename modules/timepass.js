@@ -1,30 +1,3 @@
-var userlist =[
-   {
-     id: '5f76d1f4463af3003430669c',
-     firebaseuserid: 'dNC5l6P-Sqi6-sqKCGAk5a:APA91bEzeEPNQEKw0qq1vA3WrqIX1DZdQIw1pWEtaR60EKhTBhSdm-1U3Q-3CWX7mOyenVe3hPYBE81phDeelUNqm17010maRqZ3dQPlfm0uhm3UAnLKkgy7-g7-TH332xJ3RtERAAbK',
-     userType: 'Customer'
-   },
-   {
-     id: '5f0825a4c1474a00343e7bae',
-     firebaseuserid: 'dWZU14sTS72N3-NhqiH4DP:APA91bEVZFHPF6VOjGSIs6jGLeGmdw-RAk75nXWu5Tjr8KGyl5BxZKLqt6lzreevV9bD-mnyCMMgrnlQxzOQ4Jq7mhu3vZOWJv1XcrCmQUrtLjJzUlqj0aIqycFSBx7MCzMiXkh7vV2X',
-     userType: 'Manager'
-   },
-   {
-     id: '5f0825a4c1474a00343e7bae',
-     firebaseuserid: 'dWZU14sTS72N3-NhqiH4DP:APA91bEVZFHPF6VOjGSIs6jGLeGmdw-RAk75nXWu5Tjr8KGyl5BxZKLqt6lzreevV9bD-mnyCMMgrnlQxzOQ4Jq7mhu3vZOWJv1XcrCmQUrtLjJzUlqj0aIqycFSBx7MCzMiXkh7vV2X',
-     userType: 'Packing'
-   }
- ];
- temp = new Object();
- for(let i =0;i<userlist.length;i++){
-    if(userlist[i].id in temp){
-        
-    }
-    else{
-        temp[userlist[i].id]=1;
-    }
- }
- console.log(temp);
 // // var randomColor = require('randomcolor'); // import the script
 // // k = (randomColor()+"ff").replace("#","0x");
 // // console.log(k)
@@ -33,7 +6,7 @@ var userlist =[
 // var roomSchema = require("../models/roomSchema");
 // var userSchema = require("../models/userSchema");
 // var storeProductSchema = require("../models/storeProductsSchema");
-// var employeeSchema = require("../models/employeeSchema");
+var employeeSchema = require("../models/employeeSchema");
 // var allocationSchema = require("../models/allocationSchema");
 // var optionSchema = require("../models/optionSchema");
 // const _ = require('lodash');
@@ -364,13 +337,20 @@ var userlist =[
 // // }
 
 // // var fs = require('fs');
-// // const mongoose = require("mongoose");
-// // const keys = require("../config/keys");
-// // const jsonQuery = require("json-query");
-// // const storeProductsSchema = require("../models/storeProductsSchema");
-// // mongoose.connect(keys.mongodb.dbOrg, () => {
-// //     console.log("connected to mongodb..");
-// //   },{ useFindAndModify: false });
+const mongoose = require("mongoose");
+const keys = require("../config/keys");
+const jsonQuery = require("json-query");
+const storeProductsSchema = require("../models/storeProductsSchema");
+mongoose.connect(keys.mongodb.dbOrg, () => {
+    console.log("connected to mongodb..");
+    employeeSchema.find({},async(err,result)=>{
+      if(err) console.log(err);
+      for(let i = 0;i<result.length;i++){
+        result[i].permissions["customerOrderHistoryAccess"] = false;
+        await result[i].save();
+      }
+    })
+  },{ useFindAndModify: false });
 
 // // t = {
 // // 	taskAssigned:{

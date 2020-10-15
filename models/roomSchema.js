@@ -67,7 +67,11 @@ const roomSchema = mongoose.Schema({
             timestamp:Date,
             firstName:String,
             lastName:String,
-            profilePicUrl:String
+            profilePicUrl:String,
+            visible:{
+                type: Boolean,
+                default: true
+            }
         }],
         colorCode:String
     }],

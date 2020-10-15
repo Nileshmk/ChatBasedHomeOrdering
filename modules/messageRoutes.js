@@ -36,9 +36,38 @@ async function createMessage(call,callback){
                 };
                 r.messages.push(temp);
                 roomResult.lastMessageId = roomResult.lastMessageId+1;
-                if(msg.orderstatuscode==206 || msg.orderstatuscode==209){
+                if(msg.orderstatuscode==206 || msg.orderstatuscode==209){ // removes user when his work is done like delievery and packing
                     r.userlist.pop();
                 }
+                if(msg.orderstatuscode==209 || msg.orderstatuscode==210 || msg.orderstatuscode == 211){ // disabling the messages
+                    managerResult = employeeSchema.findOne({storeid:roomResult.storeid,"userType.manager":true});
+                    if(managerResult){
+                        var temp = {
+                            messageid: roomResult.lastMessageId+1,
+                            userid:managerResult.employeeid,
+                            orderstatuscode:999,
+                            message: "Order Ended",
+                            messagetype:"COMPLETE",
+                            timestamp: timestamptemp,
+                            firstName:managerResult.firstName,
+                            lastName:managerResult.lastName,
+                            profilePicUrl:managerResult.profileUrl
+                        };
+                        r.messages.push(temp);
+                        roomResult.lastMessageId = roomResult.lastMessageId+1;
+                        for(let mi=0;mi<r.messages.length-1;mi++){
+                            r.messages[mi].visible = false;
+                        }
+                    }
+                    else{
+                        return callback({
+                            code: 400,
+                            message: "invalid input",
+                            status: grpc.status.INTERNAL
+                        })
+                    }
+                }
+
                 await roomResult.save();
                 var temp1 = {
                     messageid:roomResult.lastMessageId,
@@ -115,7 +144,10 @@ async function getAllMessages(call,callback){
                             }
                             if(cas){
                                 for(let k = 0;k<roomResults[i].orders[j].messages.length;k++){
+                                    if(roomResults[i].orders[j].messages[k].visible==false) continue; // if the messages are disable
+                                    
                                     let msg =  JSON.parse(JSON.stringify(roomResults[i].orders[j].messages[k]));
+                                    delete msg.visible;
                                     msg.roomId = roomResults[i].roomId;
                                     msg.orderid = roomResults[i].orders[j].orderid;
                                     msg.orderType = roomResults[i].orders[j].orderType;
@@ -192,7 +224,9 @@ async function getRecentMessageUpdate(call,callback){
                             for(let k = 0;k<roomResult.orders[j].messages.length;k++){
                                 console.log(roomResult.orders[j].messages[k].messageid);
                                 if(roomResult.orders[j].messages[k].messageid>updates[i].lastMessageId){
+                                    if(roomResults[i].orders[j].messages[k].visible==false) continue; // if the messages are disable
                                     let msg =  JSON.parse(JSON.stringify(roomResult.orders[j].messages[k]));
+                                    delete msg.visible;
                                     msg.roomId = roomResult.roomId;
                                     msg.orderid = roomResult.orders[j].orderid;
                                     msg.orderType = roomResult.orders[j].orderType;
