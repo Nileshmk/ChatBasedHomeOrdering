@@ -41,6 +41,7 @@ message Permission{
     bool inventory_management=2;
     bool timeslot_Pickup=3;
     bool timeslot_Delivery=4;
+    bool customerOrderHistoryAccess = 5;
 }
 
 message TaskAssigned{

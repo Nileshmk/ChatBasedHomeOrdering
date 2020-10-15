@@ -24,7 +24,8 @@ const employeeSchema = mongoose.Schema({
         revenue_view: Boolean,
         inventory_management:Boolean,
         timeslot_Pickup: Boolean,
-        timeslot_Delivery: Boolean
+        timeslot_Delivery: Boolean,
+        customerOrderHistoryAccess: Boolean
     },
     onduty:{
         type:Boolean,
