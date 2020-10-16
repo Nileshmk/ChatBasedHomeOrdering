@@ -37,10 +37,10 @@ message UserType{
 }
 
 message Permission{
-    bool revenue_view=1;
-    bool inventory_management=2;
-    bool timeslot_Pickup=3;
-    bool timeslot_Delivery=4;
+    bool inventoryManagement=1;
+    bool revenueView=2;
+    bool timeslotDelivery=3;
+    bool timeslotPickup=4;
     bool customerOrderHistoryAccess = 5;
 }
 

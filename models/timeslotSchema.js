@@ -15,8 +15,8 @@ const timeslotSchema = mongoose.Schema({
 	onOrOff:{
 		type: Boolean,
 		default: true
-	},
-	perSlotBookingNumber : Number
+	}
+	// perSlotBookingNumber:Number
 });
 
 module.exports = mongoose.model('timeslots', timeslotSchema);

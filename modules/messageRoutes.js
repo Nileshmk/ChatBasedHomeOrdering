@@ -40,7 +40,7 @@ async function createMessage(call,callback){
                     r.userlist.pop();
                 }
                 if(msg.orderstatuscode==209 || msg.orderstatuscode==210 || msg.orderstatuscode == 211){ // disabling the messages
-                    managerResult = employeeSchema.findOne({storeid:roomResult.storeid,"userType.manager":true});
+                    managerResult = await employeeSchema.findOne({storeid:roomResult.storeid,"userType.manager":true});
                     if(managerResult){
                         var temp = {
                             messageid: roomResult.lastMessageId+1,
