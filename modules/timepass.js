@@ -3,10 +3,12 @@
 // // console.log(k)
 // let app = require('../config/firebase');
 // var allocationSchema = require("../models/allocationSchema");
-// var roomSchema = require("../models/roomSchema");
+var roomSchema = require("../models/roomSchema");
 // var userSchema = require("../models/userSchema");
 // var storeProductSchema = require("../models/storeProductsSchema");
 var employeeSchema = require("../models/employeeSchema");
+var timeslotSchema = require("../models/timeslotSchema");
+
 // var allocationSchema = require("../models/allocationSchema");
 // var optionSchema = require("../models/optionSchema");
 // const _ = require('lodash');
@@ -343,13 +345,33 @@ const jsonQuery = require("json-query");
 const storeProductsSchema = require("../models/storeProductsSchema");
 mongoose.connect(keys.mongodb.dbOrg, () => {
     console.log("connected to mongodb..");
+    // timeslotSchema.find({},async(err,result)=>{
+    //   if(err) console.log(err);
+    //   for(let i = 0;i<result.length;i++){
+    //     console.log(result[i]);
+    //     result[i].perSlotBookingNumber=undefined;
+    //     await result[i].save();
+    //   }
+    //   console.log('done');
+    // })
     employeeSchema.find({},async(err,result)=>{
       if(err) console.log(err);
-      for(let i = 0;i<result.length;i++){
-        result[i].permissions["customerOrderHistoryAccess"] = false;
-        await result[i].save();
-      }
+        for(let i = 0;i<result.length;i++){
+          console.log(result[i]);
+          // result[i].permissions["inventoryManagement"] = result[i].permissions["inventory_management"];
+          // result[i].permissions["inventory_management"]=undefined;
+          result[i].permissions["revenueView"] = result[i].permissions["revenueView"];
+          result[i].permissions["revenueView"]=undefined;
+          result[i].permissions["timeslotPickup"] = result[i].permissions["timeslotPickup"];
+          result[i].permissions["timeslotPickup"]=undefined;
+          result[i].permissions["timeslotDelivery"] = result[i].permissions["timeslotDelivery"];
+          result[i].permissions["timeslotDelivery"]=undefined;
+          await result[i].save();
+        }
     })
+    // timeslotSchema.update({}, {$unset: {perSlotBookingNumber: 1 }},(err,result)=>{
+    //   console.log('done');
+    // });
   },{ useFindAndModify: false });
 
 // // t = {

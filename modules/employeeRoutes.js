@@ -14,14 +14,15 @@ const grpc = require('grpc');
 function getDutyEmployees(call, callback){
     const {storeid, Duty} = call.request;
     let temp = {storeid:storeid};
-    if(Duty=="Pickup"){
+    if(Duty=="Packing"){
         tt = "userType.packingHelper";
+        temp[tt] = true;    
     }
     else{
         tt = "userType.delivery";
+        temp[tt]=true;
     }
     
-    temp[tt] = true;
     console.log(temp);
     try{
         employeeSchema.find(temp,"employeeid firstName lastName onduty taskAssigned",async(err,employeesResult)=>{
@@ -150,6 +151,7 @@ function getEmployeeById(call, callback){
         employeeSchema.findOne({employeeid:employeeid},async(err,employeesResult)=>{
             if(err) throw err;
             if(employeesResult){
+                console.log(employeesResult);
                 return callback(null,employeesResult);
             }
             else{
