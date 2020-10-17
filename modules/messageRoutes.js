@@ -37,6 +37,22 @@ async function createMessage(call,callback){
                 r.messages.push(temp);
                 roomResult.lastMessageId = roomResult.lastMessageId+1;
                 if(msg.orderstatuscode==206 || msg.orderstatuscode==209){ // removes user when his work is done like delievery and packing
+                    // decrementing the taskAssigned
+                    if(msg.orderstatuscode==206){
+                        employeeResult = await employeeSchema.findOne({employeeid:msg.userid});
+                        if(employeeResult){
+                            employeeResult.taskAssigned["Packing"]=employeeResult.taskAssigned["Packing"]-1;
+                            await employeeResult.save();
+                        }
+                    }
+                    else{
+                        employeeResult = await employeeSchema.findOne({employeeid:msg.userid});
+                        if(employeeResult){
+                            employeeResult.taskAssigned["Delivery"]=employeeResult.taskAssigned["Delivery"]-1;
+                            await employeeResult.save();
+                        }
+                    }
+                    // popping user from chat
                     r.userlist.pop();
                 }
                 if(msg.orderstatuscode==209 || msg.orderstatuscode==210 || msg.orderstatuscode == 211){ // disabling the messages
@@ -53,6 +69,11 @@ async function createMessage(call,callback){
                             lastName:managerResult.lastName,
                             profilePicUrl:managerResult.profileUrl
                         };
+                        
+                        // decrementing the work of manager
+                        managerResult.taskAssigned["Manage"]=managerResult.taskAssigned["Manage"]-1;
+                        await managerResult.save();
+
                         r.messages.push(temp);
                         roomResult.lastMessageId = roomResult.lastMessageId+1;
                         for(let mi=0;mi<r.messages.length-1;mi++){
