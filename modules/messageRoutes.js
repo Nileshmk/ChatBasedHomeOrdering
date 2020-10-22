@@ -219,7 +219,13 @@ async function getRecentMessageUpdate(call,callback){
                 for(let j = 0;j<roomResult.orders.length;j++){
                     let cas = false;
                     for(let k = 0;k<roomResult.orders[j].userlist.length;k++){
-                        if(roomResult.orders[j].userlist[k].id==userid) cas = true;
+                        if(roomResults[i].orders[j].userlist[k].id==userid){
+                            if(k==0){
+                                uorc = true;
+                            }
+                            cas = true;
+                            break;
+                        }
                         // console.log(roomResult.orders[j].messages[k]);
                     }
                     console.log(cas);
@@ -228,6 +234,8 @@ async function getRecentMessageUpdate(call,callback){
                             console.log(roomResult.orders[j].messages[k].messageid);
                             if(roomResult.orders[j].messages[k].messageid>limit){
                                 if(roomResult.orders[j].messages[k].visible==false) continue; // if the messages are disable
+                                if(roomResults[i].orders[j].messages[k].orderstatuscode==999 && uorc==false) continue;
+                                
                                 let msg =  JSON.parse(JSON.stringify(roomResult.orders[j].messages[k]));
                                 delete msg.visible;
                                 msg.roomId = roomResult.roomId;
