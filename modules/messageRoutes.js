@@ -159,14 +159,21 @@ async function getAllMessages(call,callback){
                     if(storeResult){
                         for(let j = 0;j<roomResults[i].orders.length;j++){
                             let cas = false;
+                            let uorc = false;
                             for(let k = 0;k<roomResults[i].orders[j].userlist.length;k++){
-                                if(roomResults[i].orders[j].userlist[k].id==userid) cas = true;
+                                if(roomResults[i].orders[j].userlist[k].id==userid){
+                                    if(k==0){
+                                        uorc = true;
+                                    }
+                                    cas = true;
+                                    break;
+                                }
                                 // console.log(roomResults[i].orders[j].messages[k]);
                             }
                             if(cas){
                                 for(let k = 0;k<roomResults[i].orders[j].messages.length;k++){
                                     if(roomResults[i].orders[j].messages[k].visible==false) continue; // if the messages are disable
-                                    
+                                    if(roomResults[i].orders[j].messages[k].orderstatuscode==999 && uorc==false) continue;
                                     let msg =  JSON.parse(JSON.stringify(roomResults[i].orders[j].messages[k]));
                                     delete msg.visible;
                                     msg.roomId = roomResults[i].roomId;
@@ -185,41 +192,7 @@ async function getAllMessages(call,callback){
                             }
                         }
                     }
-                // 	return numFruit
-                //   })
-                //   console.log(numFruits);
-                // async function kada(){
-                // }
-                // await kada();
             }
-            // _.each(roomResults,async (roomResult)=>{
-            // 	await storeProductsSchema.findOne({storeid:roomResult.storeid},(err,storeResult)=>{
-            // 		if(err) throw err;
-            // 		if(storeResult){
-            // 			_.each(roomResult.orders,(order)=>{
-            // 				_.each(order.userlist,(user)=>{
-            // 					if(user.id==userid){
-            // 						_.each(order.messages, async(message)=>{
-            // 							let msg =  await JSON.parse(JSON.stringify(message));
-            // 							msg.roomId = roomResult.roomId;
-            // 							msg.orderid = order.orderid;
-            // 							msg.orderType = order.orderType;
-            // 							msg.orderEnd = order.endtime;
-            // 							msg.colorCode = order.colorCode;
-            // 							msg.optionsVersion=storeResult.optionsVersion;  
-            // 							msg.storeid=storeResult.storeid;
-            // 							msg.storeName=storeResult.storeName;
-            // 							msg.storetype=storeResult.storeCategory;
-            // 							msg.storeLogoUrl=storeResult.storeLogoUrl;
-            // 							await console.log(msg);
-            // 							// console.lo(msg);
-            // 						})
-            // 					}
-            // 				});   
-            // 			});
-            // 		} 
-            // 	})   
-            // });
         }
         console.log("end");
         call.end();
