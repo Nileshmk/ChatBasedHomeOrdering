@@ -53,12 +53,12 @@ async function createMessage(call,callback){
                         }
                     }
                     // popping user from chat
-                    r.userlist.pop();
+                    // r.userlist.pop();
                 }
-                if(msg.orderstatuscode==209 || msg.orderstatuscode==210 || msg.orderstatuscode == 211){ // disabling the messages
+                if(msg.orderstatuscode==209 || msg.orderstatuscode==210 || msg.orderstatuscode == 211|| msg.orderstatuscode == 212){ // disabling the messages
                     managerResult = await employeeSchema.findOne({storeid:roomResult.storeid,"userType.manager":true});
                     if(managerResult){
-                        var temp = {
+                        var temp999 = {
                             messageid: roomResult.lastMessageId+1,
                             userid:managerResult.employeeid,
                             orderstatuscode:999,
@@ -74,7 +74,7 @@ async function createMessage(call,callback){
                         managerResult.taskAssigned["Manage"]=managerResult.taskAssigned["Manage"]-1;
                         await managerResult.save();
 
-                        r.messages.push(temp);
+                        r.messages.push(temp999);
                         roomResult.lastMessageId = roomResult.lastMessageId+1;
                         for(let mi=0;mi<r.messages.length-1;mi++){
                             r.messages[mi].visible = false;
@@ -91,7 +91,7 @@ async function createMessage(call,callback){
 
                 await roomResult.save();
                 var temp1 = {
-                    messageid:roomResult.lastMessageId,
+                    messageid:temp.messageid,
                     roomId:roomResult.roomId,
                     optionsVersion:storeResult.optionsVersion,  
                     storeid:storeResult.storeid, 
@@ -254,7 +254,7 @@ async function getRecentMessageUpdate(call,callback){
                         for(let k = 0;k<roomResult.orders[j].messages.length;k++){
                             console.log(roomResult.orders[j].messages[k].messageid);
                             if(roomResult.orders[j].messages[k].messageid>limit){
-                                if(roomResult.orders[j].messages[k].visible==false) continue; // if the messages are disable
+                                // if(roomResult.orders[j].messages[k].visible==false) continue; // if the messages are disable
                                 
                                 let msg =  JSON.parse(JSON.stringify(roomResult.orders[j].messages[k]));
                                 delete msg.visible;
