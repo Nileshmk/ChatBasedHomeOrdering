@@ -1,0 +1,56 @@
+syntax = "proto3";
+
+package storeProductPackage;
+
+service storeProductProto {
+  rpc searchStore(requestSearchWords) returns (resultSearchStore);
+  rpc searchProduct(requestSearchWords) returns (resultSearchProduct);
+}
+
+message requestSearchWords{
+    string searchWord=1;
+}
+
+// searchStore
+message resultSearchStore{
+  repeated singResultSearchStore stores=1; 
+}
+
+message singResultSearchStore{
+  string storeid=1;
+  string storeName=2;
+  string storeCategory=3;
+  UserAddress storeAddress=4;
+  bool isPickup=5;
+  bool isDelivery=6;
+}
+
+message UserAddress{
+  ByGoogle byGoogle = 1;
+  ByUser byUser = 2;
+  string _id = 3;
+}
+
+message ByGoogle{
+  Loc loc = 1;
+  string address = 2;
+  string city = 3;
+  string state = 4;
+  string country = 5;
+  string postalcode = 6;
+}
+
+message Loc{
+  repeated string coordinates = 1;
+  string type = 2;
+}
+message ByUser{
+  string addressTag = 1;
+  string userAddress = 2;
+  string Landmark = 3;
+}
+
+// searchProduct
+message resultSearchProduct{
+  
+}

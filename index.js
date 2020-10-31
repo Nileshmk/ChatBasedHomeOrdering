@@ -27,6 +27,11 @@ const packageD = protoLoader.loadSync(path+"/proto/employeeProto.proto",{});
 const employeeObject = grpc.loadPackageDefinition(packageD);
 const employeePackage = employeeObject.employeePackage;
 
+// loading storePackage
+const packageDe = protoLoader.loadSync(path+"/proto/storeProductProto.proto",{});
+const storeProductObject = grpc.loadPackageDefinition(packageDe);
+const storeProductPackage = storeProductObject.storeProductPackage;
+
 // initialize grpc server
 const server = new grpc.Server()
 server.bind("0.0.0.0:40000", grpc.ServerCredentials.createInsecure());
@@ -43,10 +48,16 @@ const { createMessage, getAllMessages,getRecentMessageUpdate} = require("./modul
 const { getDutyEmployees, assignEmployeeTask, getEmployeeById} = require("./modules/employeeRoutes");
 const { getOptionVersion } = require('./modules/optionRoutes');
 const { getOrder,updateOrder,getOrderSummary } = require('./modules/orderRoutes');
+const {searchStore} = require('./modules/storeProductRoutes');
 
 server.addService(employeePackage.employeeProto.service,
 {
   "getEmployeeById":getEmployeeById
+});
+
+server.addService(storeProductPackage.storeProductProto.service,
+{
+  "searchStore":searchStore
 });
 
 server.addService(roomPackage.roomProto.service,

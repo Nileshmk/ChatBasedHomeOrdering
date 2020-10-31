@@ -4,7 +4,21 @@ const storeProductSchema = mongoose.Schema({
     storeid: String,
     userid : String,
     storeName: String,
-    storeAddress: String,
+    storeAddress: {
+      byGoogle : {
+          address : String ,
+            city : String ,
+            state : String ,
+            country : String ,
+            postalcode : String,
+            loc : { type: { type : String } , coordinates : [] },
+       },
+       byUser : {
+         addressTag : String,
+         userAddress : String,
+         Landmark : String
+       }
+    },
     storeCategory: String,
     optionsVersion: Number,
     storeLogoUrl : String,
