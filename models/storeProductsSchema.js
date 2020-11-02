@@ -77,46 +77,44 @@ const storeProductSchema = mongoose.Schema({
                 dsprice: Number,
                 default_v: Boolean,
                 outofstock : Boolean,
-                total_quantity : String
+                total_quantity : String,
+                packing:{
+                    weight: Number,
+                    length: Number,
+                    breath: Number
+                },
+                description:[
+                  String
+                ],
+                features:[{
+                    featuresKey:String,
+                    featuresValue: String
+                }],
+                mainImage:[String],
+                subImages:{
+                    approved:[{
+                        userid:String,
+                        time:Date,
+                        url:String
+                    }],
+                    archived:[{
+                        userid:String,
+                        time:Date,
+                        url:String
+                    }],
+                    neither:[{
+                        userid:String,
+                        time:Date,
+                        url:String
+                    }]
+                },
+                maxOrderQuantity: Number 
               }
             ],
-            packing:{
-                weight: Number,
-                length: Number,
-                breath: Number
-            },
-            description:{
-                modelNumber: String,
-                type: String,
-                color: String
-            },
-            features:[{
-                key:String,
-                value: String
-            }],
-            searchKeywords:[String],
-            mainImage:[String],
-            subImages:{
-                approved:[{
-                    userid:String,
-                    time:Date,
-                    url:String
-                }],
-                archived:[{
-                    userid:String,
-                    time:Date,
-                    url:String
-                }],
-                neither:[{
-                    userid:String,
-                    time:Date,
-                    url:String
-                }]
-            },
-            maxOrderQuantity: Number               
+            searchKeywords:[String]              
           }]        
         }],
-     }        
+        }        
         ]
      });
 
