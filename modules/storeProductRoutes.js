@@ -8,6 +8,7 @@ const roomSchema = require("../models/roomSchema");
 const orderSchema = require("../models/orderSchema");
 const ObjectId = require("mongodb").ObjectID;
 const storeProductsSchema = require("../models/storeProductsSchema");
+const timeslotSchema = require("../models/timeslotSchema");
 const jsonQuery = require("json-query");
 const grpc = require('grpc');
 
@@ -60,7 +61,7 @@ async function searchStore(call, callback){
                     }
                     obj.push(temp);
                     if(i==storeResult.length-1){
-                      return res.json(obj);
+                      return callback(null,{"stores":obj});
                     }
                   });  
                 });
