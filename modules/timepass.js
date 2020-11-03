@@ -345,16 +345,31 @@ const jsonQuery = require("json-query");
 const storeProductsSchema = require("../models/storeProductsSchema");
 mongoose.connect(keys.mongodb.dbOrg, () => {
     console.log("connected to mongodb..");
-    
-    storeProductSchema.find({},async(err,result)=>{
+    const storeid = "5ef1a64cc729500c79aa2db8";
+    searchWord = "kidney beans";
+    storeProductSchema.findOne({storeid:storeid},async(err,storeResult)=>{
       if(err) console.log(err);
-      let arr = [];
-      for(let i = 0;i<result.length;i++){
-         var r = jsonQuery("storeProductCategories[*].subCategory[*].subCategoryProducts[*productName~/^chakki/i]..", {data: result[i],allowRegexp:true});
-         console.log(r.value);
-        //  console.log(r.parents)
+      if(storeResult){
+        let regex = new RegExp(searchWord,'i');
+        for(let i = 0;i<storeResult.storeProductCategories.length;i++){
+          for(let j = 0;j<storeResult.storeProductCategories[i].subCategory.length;j++){
+            for(let k = 0;k<storeResult.storeProductCategories[i].subCategory[j].subCategoryProducts.length;k++){
+              if(regex.test(storeResult.storeProductCategories[i].subCategory[j].subCategoryProducts[k].productName)){
+                let temp = {}
+                temp.categoryName = storeResult.storeProductCategories[i].category;
+                temp.subCategoryName = storeResult.storeProductCategories[i].subCategory[j].subCategoryName;
+                temp.productName = storeResult.storeProductCategories[i].subCategory[j].subCategoryProducts[k].productName;
+                temp.quantity = storeResult.storeProductCategories[i].subCategory[j].subCategoryProducts[k].qtyCategory.map(function(a) {return {"quantityName":a.quantity,"quantityId":a._id};});
+                console.log(temp);
+            }
+            }
+          } 
+        }
       }
-    })
+      else{
+        return callback({code: grpc.status.NOT_FOUND,details: 'Not found'});
+      }
+    });
   },{ useFindAndModify: false });
 
 

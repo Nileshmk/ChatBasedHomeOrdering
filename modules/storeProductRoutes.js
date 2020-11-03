@@ -77,19 +77,37 @@ async function searchStore(call, callback){
     }
 }
 
-async function searchProduct(call, callback){
-    const {searchWord} = call.request;
+async function searchProductInStore(call, callback){
+    const {storeid,searchWord} = call.request;
     try{
-        await storeProductSchema.find({},async(err,result)=>{
+        await storeProductsSchema.findOne({storeid:storeid},async(err,storeResult)=>{
           if(err) console.log(err);
-          let arr = [];
-          for(let i = 0;i<result.length;i++){
-            var r = jsonQuery("storeProductCategories[*].subCategory[*].subCategoryProducts[*productName~/^chakki/i]", {data: result[i],allowRegexp:true}).value;
-            console.log(r);
+          if(storeResult){
+            let regex = new RegExp(searchWord,'i');
+            for(let i = 0;i<storeResult.storeProductCategories.length;i++){
+              for(let j = 0;j<storeResult.storeProductCategories[i].subCategory.length;j++){
+                for(let k = 0;k<storeResult.storeProductCategories[i].subCategory[j].subCategoryProducts.length;k++){
+                  if(regex.test(storeResult.storeProductCategories[i].subCategory[j].subCategoryProducts[k].productName)){
+                    let temp = {}
+                    temp.categoryName = storeResult.storeProductCategories[i].category;
+                    temp.subCategoryName = storeResult.storeProductCategories[i].subCategory[j].subCategoryName;
+                    temp.productName = storeResult.storeProductCategories[i].subCategory[j].subCategoryProducts[k].productName;
+                    temp.productId = storeResult.storeProductCategories[i].subCategory[j].subCategoryProducts[k]._id;
+                    temp.quantity = storeResult.storeProductCategories[i].subCategory[j].subCategoryProducts[k].qtyCategory.map(function(a) {return {"quantityName":a.quantity,"quantityId":a._id};});
+                    console.log(temp);
+                    return callback(null,temp);
+                  }
+                }
+              } 
+            }
+          }
+          else{
+            return callback({code: grpc.status.NOT_FOUND,details: 'Not found'});
           }
         })
     }
     catch(err){
+      console.log(err);
         return callback({code: grpc.status.NOT_FOUND,details: 'Not found'});
     }
 }
@@ -119,4 +137,4 @@ function sendFcm(token,box,callback){
     });
 }
 
-module.exports = {searchStore};
+module.exports = {searchStore,searchProductInStore};

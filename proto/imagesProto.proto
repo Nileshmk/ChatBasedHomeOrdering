@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package imagesPackage;
+
+service imagesProto {
+  rpc UploadImage(stream UploadImageRequest) returns (UploadImageResponse);
+}
+
+message UploadImageRequest{
+    string type=1;
+    bytes data=2;
+}
+
+
+message UploadImageResponse{
+  string id=1;
+  int32 size =2;
+}

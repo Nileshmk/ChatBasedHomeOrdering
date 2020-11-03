@@ -4,7 +4,7 @@ package storeProductPackage;
 
 service storeProductProto {
   rpc searchStore(requestSearchWords) returns (resultSearchStore);
-  rpc searchProduct(requestSearchWords) returns (resultSearchProduct);
+  rpc searchProductInStore(requestSearchProductInStore) returns (resultSearchProductInStore);
 }
 
 message requestSearchWords{
@@ -51,6 +51,20 @@ message ByUser{
 }
 
 // searchProduct
-message resultSearchProduct{
-  
+message requestSearchProductInStore{
+  string storeid=1;
+  string searchWord=2;
+}
+
+message resultSearchProductInStore{
+  string categoryName=1;
+  string subCategoryName=2;
+  string productName=3;
+  string productId=4;
+  repeated Quantity quantity=5;
+}
+
+message Quantity{
+  string quantityName=1;
+  string quantityId=2;
 }

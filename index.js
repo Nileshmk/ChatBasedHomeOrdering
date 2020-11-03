@@ -32,6 +32,12 @@ const packageDe = protoLoader.loadSync(path+"/proto/storeProductProto.proto",{})
 const storeProductObject = grpc.loadPackageDefinition(packageDe);
 const storeProductPackage = storeProductObject.storeProductPackage;
 
+// loading imagesPackage
+const packageDef = protoLoader.loadSync(path+"/proto/imagesProto.proto",{});
+const imagesObject = grpc.loadPackageDefinition(packageDef);
+const imagesPackage = imagesObject.imagesPackage;
+
+
 // initialize grpc server
 const server = new grpc.Server()
 server.bind("0.0.0.0:40000", grpc.ServerCredentials.createInsecure());
@@ -48,7 +54,8 @@ const { createMessage, getAllMessages,getRecentMessageUpdate} = require("./modul
 const { getDutyEmployees, assignEmployeeTask, getEmployeeById} = require("./modules/employeeRoutes");
 const { getOptionVersion } = require('./modules/optionRoutes');
 const { getOrder,updateOrder,getOrderSummary } = require('./modules/orderRoutes');
-const {searchStore} = require('./modules/storeProductRoutes');
+const {searchStore, searchProductInStore} = require('./modules/storeProductRoutes');
+const {UploadImage} = require('./modules/imagesRoutes');
 
 server.addService(employeePackage.employeeProto.service,
 {
@@ -57,7 +64,8 @@ server.addService(employeePackage.employeeProto.service,
 
 server.addService(storeProductPackage.storeProductProto.service,
 {
-  "searchStore":searchStore
+  "searchStore":searchStore,
+      "searchProductInStore": searchProductInStore
 });
 
 server.addService(roomPackage.roomProto.service,
@@ -74,6 +82,10 @@ server.addService(roomPackage.roomProto.service,
     "getOrderSummary":getOrderSummary
 });
 
+server.addService(imagesPackage.imagesProto.service,
+{
+ "UploadImage":UploadImage
+});
 
 server.start();
 
