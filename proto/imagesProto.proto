@@ -11,6 +11,15 @@ message UploadImageRequest{
     bytes data=2;
 }
 
+message UploadImageRequest{
+  string storeid=1;
+  string userid=2;
+  string categoryid=3;
+  string subCategory=4;
+  string productid=5;
+  string quantityid=6;
+  bytes imageDataChunk=7;
+}
 
 message UploadImageResponse{
   string id=1;
